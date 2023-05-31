@@ -16,16 +16,16 @@ This is the address used as the reply-to for OpenAlex API calls.
 In terminal and from directory `gesta-diversity`:
 
 0. For first time set-up, build the conda environment which will allow access to all necessary packages:
-
+<!--- Make code --->
      `conda env create -f journal-diversity.yml`
 
 1. Activate the environment:
-
+<!--- Make code --->
     conda activate journal-diversity
 
 2. Run the program:
-    
-    `sh diversity.sh`
+<!--- Make code --->
+    sh diversity.sh
 
 
 Thank you to OpenAlex:
