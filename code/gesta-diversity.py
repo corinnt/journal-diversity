@@ -4,8 +4,6 @@ import requests
 import pandas as pd
 import geopandas as gpd
 
-
-
 from mailto import email # just a function that returns your email address
 from map import map_points
 
@@ -28,7 +26,7 @@ def main(source_id):
     source_query = "https://api.openalex.org/sources/" + source_id
     data = Data()
     iterate_search(source_id, data)
-    display_data(data)    
+    display_data(data, write_maps=True)    
     # TODO: make protocol for what fields to query?
     # ie get institution ID, else get institution name and country, else get author name and country and year?
 
@@ -39,8 +37,9 @@ def increment(key, dict):
         dict[key] = 1
 
 def valid_title(title):
-    """
-        :param title: prospective title
+    """ 
+        Given a title, returns true if the title is not 
+            :param title: prospective title 
     """
     status = title and\
             title != "Front Matter" and\
@@ -52,7 +51,7 @@ def valid_title(title):
 def parse_work(work, data):
     """
         :param work:
-        :param data: a Data object to populate
+        :param data: partially full Data object
     """
     title = work['display_name']
     if not title: title = 'NA'
@@ -72,7 +71,7 @@ def parse_work(work, data):
 def parse_authorship(authorships, data):
     """
         :param authorships: list of authorship objects from the OpenAlex API
-        :param data: Data object
+        :param data: partially full Data object
     """
     author_string = ""
     for authorship in authorships:
@@ -89,7 +88,7 @@ def parse_authorship(authorships, data):
 def parse_geodata(id, data):
     """
         :param id: - string ID of Institution to check for geodata
-        :param data: - Data object
+        :param data: - partially full Data object
     """
     url =  "https://api.openalex.org/institutions/" + id
     try:
@@ -110,11 +109,11 @@ def parse_geodata(id, data):
 def iterate_search(source_id, data):
     """
     :param source_id: string - OpenAlex ID of the source to analyze
-    :param data: Data object
+    :param data: empty Data object
     """
     # only get name and authors for after 1999
-    works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships,concepts,publication_year&filter=publication_year:>1999,locations.source.id:' + source_id + '&page={}&mailto=' + email()
-    
+    works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships,concepts,publication_year&filter=locations.source.id:' + source_id + '&page={}&mailto=' + email()
+    #publication_year:>1999
     page = 1
     has_more_pages = True
     fewer_than_10k_results = True
@@ -140,22 +139,25 @@ def iterate_search(source_id, data):
         has_more_pages = len(results) == page_size
         fewer_than_10k_results = page_size * page <= 10000
 
-def display_data(data):
+def display_data(data, write_csv=False, write_maps=False):
     """
-        :param data: Data object
+        :param data: filled Data object 
+        :param write_csv: 
     """
     #print(data.institutions)
     dict = {'author' : data.authors, 'title' : data.titles, 'year' : data.years}
     df = pd.DataFrame(dict)
     print(df.head())
-    #df.to_csv("../data/data.csv")
+    
+    if write_csv: df.to_csv("../data/data.csv")
 
-    map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes}
-    map_df = pd.DataFrame(map_dict)
-    global_map = gpd.read_file('../shapefiles/world-map/WB_Land_10m.shp')
-    map_points(map_df, global_map, 'world')
-    us_map = gpd.read_file('../shapefiles/us-map/tl_2012_us_state.shp')
-    map_points(map_df, us_map, 'US')
+    if write_maps:
+        map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes}
+        map_df = pd.DataFrame(map_dict)
+        global_map = gpd.read_file('../shapefiles/world-map/WB_Land_10m.shp')
+        map_points(map_df, global_map, 'world')
+        us_map = gpd.read_file('../shapefiles/us-map/tl_2012_us_state.shp')
+        map_points(map_df, us_map, 'US')
 
 if __name__ == "__main__":
     gesta_id = "S21591069"
