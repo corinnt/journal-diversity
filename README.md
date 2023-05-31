@@ -6,6 +6,8 @@ Target functionality: Generate visualizations of trends in gender and region of 
 
 Current functionality: Maps locations of institutions with which Gesta-published authors are affiliated.
 
+Note: Script can easily be generalized to other journals, but Gesta is the motivating example. 
+
 ### Use Instructions
 
 After cloning, add the following function which returns your email address to `mailto.py`. 
