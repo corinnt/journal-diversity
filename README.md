@@ -2,7 +2,9 @@
 
 *Gesta is a leading peer-reviewed academic journal in the area of medieval art.*
 
-Maps locations of institutions affiliated with authors of articles published in Gesta. 
+Target functionality: Generate visualizations of trends in gender and region of origin of Gesta-published authors.
+
+Current functionality: Maps locations of institutions with which Gesta-published authors are affiliated.
 
 ### Use Instructions
 
@@ -17,7 +19,7 @@ In terminal and from directory `gesta-diversity`:
 
 0. For first time set-up, build the conda environment which will allow access to all necessary packages:
 <!--- Make code --->
-     `conda env create -f journal-diversity.yml`
+     conda env create -f journal-diversity.yml
 
 1. Activate the environment:
 <!--- Make code --->
