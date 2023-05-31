@@ -41,12 +41,12 @@ def valid_title(title):
         Given a title, returns true if the title is not 
             :param title: prospective title 
     """
-    status = title and\
-            title != "Front Matter" and\
-            title != "Back Matter" and\
-            title != "Front Cover" and\
+    return title and\
+            title != "Front Matter" and \
+            title != "Back Matter" and \
+            title != "Front Cover" and \
             title != "Back Cover"
-    return status
+
 
 def parse_work(work, data):
     """
@@ -58,8 +58,7 @@ def parse_work(work, data):
     data.titles.append(title)
 
     year = str(work['publication_year'])
-    if not year: 
-        year = 'NA'
+    if not year: year = 'NA'
     data.years.append(year)
 
     authorship_list = work['authorships']
