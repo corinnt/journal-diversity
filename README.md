@@ -1,6 +1,6 @@
 # Work in progress: Diversity in Gesta
 
-*Gesta is a leading peer-reviewed academic journal in the area of medieval art.*
+Gesta is a leading peer-reviewed academic journal in the area of medieval art.
 
 Target functionality: Generate visualizations of trends in gender and region of origin of Gesta-published authors.
 
