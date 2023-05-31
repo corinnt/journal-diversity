@@ -10,7 +10,7 @@ Current functionality: Maps locations of institutions with which Gesta-published
 
 ### Use Instructions
 
-After cloning, add the following function which returns your email address to `mailto.py`. 
+After cloning, add the following function which returns your email address to `mailto.py`. This will be a commandline argument later. 
 
 This is the address used as the reply-to for OpenAlex API calls.  
 
