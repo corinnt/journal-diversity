@@ -1,7 +1,12 @@
+from readline import insert_text
 import requests
 
-class Counts():
+from mailto import email # just a function that returns your email address
+from map import map_points
+
+class Data():
     def __init__(self):
+        self.institution_ids = set()
         self.titles = []
         self.countries = {}
         self.institutions = {}
@@ -9,18 +14,19 @@ class Counts():
 def main(source_id):
     issn_l = "0016-920X"
     source_query = "https://api.openalex.org/sources/" + source_id
-    counts = Counts()
-    populate_work_dictionaries(source_id, counts)
+    data = Data()
+    populate_work_dictionaries(source_id, data)
     # url with a placeholder for page number
     #works_query_with_page = 'https://api.openalex.org/works?filter=locations.source.id:' + gesta_id + '&page={}'
     #print(work_IDs)
-    for title in counts.titles:
+    for title in data.titles:
         if title != "Front Matter" and\
             title != "Back Matter" and\
             title != "Front Cover" and\
             title != "Back Cover":
             pass
-    print(counts.institutions)
+    #print(data.institutions)
+    map_points([], '')
     # TODO: make protocol for what fields to query?
     # ie get institution ID, else get institution name and country, else get author name and country and year?
 
@@ -30,11 +36,10 @@ def increment(key, dict):
     else:
         dict[key] = 1
 
-def populate_authorship(authorships, counts):
+def populate_authorship(authorships, data):
     """
         :param authorships: list of authorship objects from the OpenAlex API
-        :param country_counts: dictionary mapping country codes to instance count
-        :param institution_counts: dictionary mapping OpenAlex institution IDs to counts of their occurrences
+        :param data: Data object
     """
     #print("#authorships: " + str(len(authorships)))
     for authorship in authorships:
@@ -42,16 +47,17 @@ def populate_authorship(authorships, counts):
         for institution in authorship['institutions']:
             code = institution['country_code']
             id = institution['id']
-            increment(code, counts.countries)
-            increment(id, counts.institutions)
+            increment(code, data.countries)
+            increment(id, data.institutions)
+            data.institution_ids.add(id)
 
-def populate_work_dictionaries(source_id, counts):
+def populate_work_dictionaries(source_id, data):
     """
     :param source_id: string - OpenAlex ID of the source to analyze
-    :param counts: Counts object
+    :param data: Data object
     """
     # only get name and authors for after 1999
-    works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships&filter=publication_year:>1999,locations.source.id:' + source_id + '&page={}'
+    works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships&filter=publication_year:>1999,locations.source.id:' + source_id + '&page={}&mailto=' + email()
     
     # get all Work info after 1999
     #works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships&page={}'
@@ -70,7 +76,7 @@ def populate_work_dictionaries(source_id, counts):
         results = page_with_results['results']
         for i, work in enumerate(results):
             title = work['display_name']
-            counts.titles.append(title)
+            data.titles.append(title)
             if title:
                 print(title)
             else:
@@ -78,7 +84,7 @@ def populate_work_dictionaries(source_id, counts):
             authorship_list = work['authorships']
             if authorship_list:
                 print(str(authorship_list) + "\n\n")
-                populate_authorship(authorship_list, counts)
+                populate_authorship(authorship_list, data)
             else:
                 print("MISSING AUTHORSHIPS\n\n")
             #print(openalex_id, end='\t' if (i+1)%5!=0 else '\n')
