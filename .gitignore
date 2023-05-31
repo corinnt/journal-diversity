@@ -1,6 +1,5 @@
 mailto.py 
-/world-map
-/us-map
+/shapefiles
 *.jpg
 *.shp
 *.csv
