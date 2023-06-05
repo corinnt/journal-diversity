@@ -39,17 +39,17 @@ In terminal and from directory `gesta-diversity`
 
   `-v`, `--verbose`         include to print progress messages
 
-  `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
-                        name of journal or source to search for
-
   `-c`, `--write_csv`       include to write csv of data
 
   `-m`, `--write_maps`      include to plot locations of affiliated institutions
 
   `--start_year START_YEAR` 
-                        filter publications by this earliest year (inclusive)
+                            filter publications by this earliest year (inclusive)
 
-  `--end_year END_YEAR`   filter publications by this latest year (inclusive)
+  `--end_year END_YEAR`     filter publications by this latest year (inclusive)
+
+  `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
+                            name of journal or source to search for
 
 
 Thank you to OpenAlex:
