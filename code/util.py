@@ -32,3 +32,18 @@ def unpickle_data(path):
     pickled_data = open(path, "rb")
     data = pickle.load(pickled_data)
     return data
+
+def decode_inverted(inverted_index, data):
+    """ Converts a dictionary of word : [indices] to plain text and adds it to Data's list of abstracts
+        :param inverted_index: 
+        :param data: 
+    """
+    word_index = [] 
+    for k, v in inverted_index.items():
+        for index in v:
+            word_index.append([k, index])
+
+    sorted_tuples = sorted(word_index, key = lambda x : x[1])
+    words = [word[0] for word in sorted_tuples]
+    words = ' '.join(words)
+    data.abstracts.append(words)

@@ -1,5 +1,5 @@
 import requests
-from util import increment
+from util import increment, decode_inverted
 from diversity import info
 
 def parse_work(work, data):
@@ -15,17 +15,26 @@ def parse_work(work, data):
     if not year: year = 'NA'
     data.years.append(year)
 
-    concepts_list = work['concepts']
-    if concepts_list:
-        parse_concepts(concepts_list, data)
-    else:
-        data.concepts.append('NA')
+    if data.config.write_abstracts:
+        inverted_index = work['abstract_inverted_index']
+        if inverted_index:
+            decode_inverted(inverted_index, data)
+        else:
+            data.abstracts.append('NA')
 
     authorship_list = work['authorships']
     if authorship_list:
         parse_authorship(authorship_list, data)
     else:
         data.authors.append('NA')
+
+    concepts_list = work['concepts']
+    if concepts_list:
+        parse_concepts(concepts_list, data)
+    else:
+        data.concepts.append('NA')
+
+    
         
 def parse_concepts(concepts, data):
     """
