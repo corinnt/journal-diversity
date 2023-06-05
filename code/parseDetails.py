@@ -4,7 +4,7 @@ from diversity import info
 
 def parse_work(work, data):
     """
-        :param work:
+        :param work: single Work object from OpenAlex
         :param data: partially full Data object
     """
     title = work['display_name']
@@ -28,10 +28,14 @@ def parse_work(work, data):
         data.authors.append('NA')
         
 def parse_concepts(concepts, data):
+    """
+        :param concepts: list of dehydrated Concept objects from OpenAlex
+        :param data: partially full Data object
+    """
     concept_string = ""
     for concept in concepts:
         if concept['score'] > 0.3:
-            concept_string += concept['display_name'] + "\n"
+            concept_string += concept['display_name'] + "; "
     data.concepts.append(concept_string)
 
 def parse_authorship(authorships, data):
@@ -41,7 +45,7 @@ def parse_authorship(authorships, data):
     """
     author_string = ""
     for authorship in authorships:
-        author_string += authorship['author']['display_name'] + "\n"
+        author_string += authorship['author']['display_name'] + "; "
         for institution in authorship['institutions']:
             code = institution['country_code']
             id = institution['id']
@@ -66,6 +70,8 @@ def parse_geodata(id, data):
             long = results['geo']['longitude']
             data.latitudes.append(lat)
             data.longitudes.append(long)
+            increment((long, lat), data.coordinates)
+
     except requests.exceptions.RequestException as e:
         print("Error occurred:", e)
     except ValueError as e:
