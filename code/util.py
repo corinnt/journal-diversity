@@ -1,3 +1,4 @@
+import pickle
 
 def increment(key, dict):
     if key in dict:
@@ -15,3 +16,19 @@ def valid_title(title):
             title != "Back Matter" and \
             title != "Front Cover" and \
             title != "Back Cover"
+
+def pickle_data(data):
+    """ Takes in populated Data object.
+        Writes pickled files to data/pickled_data. 
+    """
+    destination = "../data/pickled_data"
+    pickled_data = open(destination, "wb")
+    pickle.dump(data, pickled_data)
+
+def unpickle_data(path):
+    """ Takes in filepath to the pickled Data object from a previous run
+        Returns the unpickled Data object.
+    """
+    pickled_data = open(path, "rb")
+    data = pickle.load(pickled_data)
+    return data

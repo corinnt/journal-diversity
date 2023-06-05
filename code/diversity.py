@@ -16,7 +16,7 @@ def info(text):
         print(text)
 
 class Data():
-    def __init__(self):
+    def __init__(self, args):
         self.titles = []
         self.authors = []
         self.concepts = []
@@ -30,26 +30,16 @@ class Data():
         self.institutions = {}
         self.institution_ids = set()
 
-def main(args):
-    data = Data()
-    if args.journal_name:
-        args.id = get_journal_id(args.journal_name)
-    if args.restore_saved:
-        data = unpickle_data('../data/pickled_data')
-    else:
-        iterate_search(args, data)
-    pickle_data(data)
-    display_data(data, write_csv=args.csv, write_maps=args.maps)    
+        self.config = args
+        self.id = None
 
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("email", help="the reply-to email for OpenAlex API calls") # required=True,
     parser.add_argument("-v", "--verbose", action="store_true", help="include to print progress messages")
     parser.add_argument("-n", "--journal_name", dest="journal_name", type=str, default=None, help="name of journal or source to search for")
-    parser.add_argument("-i", "--journal_id", dest="id", type=str, default="S21591069", help="OpenAlex id of journal to analyze - defaults to Gesta if unspecified") 
     parser.add_argument("-c", "--write_csv", dest="csv", action="store_true", help="include to write csv of data") 
     parser.add_argument("-m", "--write_maps", dest="maps", action="store_true", help="include to plot locations of affiliated institutions") 
-    #parser.add_argument("-s", "--no_save", action="store_false", help="include to NOT save data for other use") 
     parser.add_argument("-r", "--restore_saved", action="store_true", help="include to restore saved data") 
     parser.add_argument("--start_year", dest="start_year", type=int, default=None, help="filter publication dates by this earliest year (inclusive)")
     parser.add_argument("--end_year", dest="end_year", type=int, default=None, help="filter publication dates by this latest year (inclusive)")
@@ -58,6 +48,20 @@ def parseArguments():
         global VERBOSE 
         VERBOSE = True
     return args
+
+def main(args):
+    data = Data(args)
+    if args.journal_name:
+        data.id = get_journal_id(args.journal_name)
+    else:
+        data.id = 'S21591069' # Default Gesta
+
+    if args.restore_saved:
+        data = unpickle_data('../data/pickled_data')
+    else:
+        iterate_search(args, data)
+        pickle_data(data)
+    display_data(data, write_csv=args.csv, write_maps=args.maps)    
 
 def get_journal_id(args):
     url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
@@ -118,10 +122,9 @@ def display_data(data, write_csv=False, write_maps=False):
         :param data: filled Data object 
         :param write_csv: 
     """
-    #print(data.institutions)
     dict = {'author' : data.authors, 'title' : data.titles, 'year' : data.years, 'keywords' : data.concepts}
     df = pd.DataFrame(dict)
-    print(df.head())
+    info(df.head())
     
     if write_csv: 
         info("writing csv...")
