@@ -65,7 +65,6 @@ And to PyGMT:
 -  make protocol for what fields to query to get locations if they don't have the coordinates?
     ie get institution ID, else get institution name and country, else get author name and country and year?
 - look into Genderize API to get gender stats
-- look into reconstructing abstracts from one-hot encoding
 - swap print statements for progress bar
 
 
