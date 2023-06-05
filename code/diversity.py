@@ -6,7 +6,7 @@ import geopandas as gpd
 
 import parseDetails
 from map import map_points
-from util import valid_title
+from util import valid_title, unpickle_data, pickle_data
 
 
 VERBOSE = False
@@ -24,6 +24,7 @@ class Data():
 
         self.latitudes = []
         self.longitudes = []
+        self.coordinates = {}
 
         self.countries = {}
         self.institutions = {}
@@ -33,7 +34,11 @@ def main(args):
     data = Data()
     if args.journal_name:
         args.id = get_journal_id(args.journal_name)
-    iterate_search(args, data)
+    if args.restore_saved:
+        data = unpickle_data('../data/pickled_data')
+    else:
+        iterate_search(args, data)
+    pickle_data(data)
     display_data(data, write_csv=args.csv, write_maps=args.maps)    
 
 def parseArguments():
@@ -44,6 +49,8 @@ def parseArguments():
     parser.add_argument("-i", "--journal_id", dest="id", type=str, default="S21591069", help="OpenAlex id of journal to analyze - defaults to Gesta if unspecified") 
     parser.add_argument("-c", "--write_csv", dest="csv", action="store_true", help="include to write csv of data") 
     parser.add_argument("-m", "--write_maps", dest="maps", action="store_true", help="include to plot locations of affiliated institutions") 
+    #parser.add_argument("-s", "--no_save", action="store_false", help="include to NOT save data for other use") 
+    parser.add_argument("-r", "--restore_saved", action="store_true", help="include to restore saved data") 
     parser.add_argument("--start_year", dest="start_year", type=int, default=None, help="filter publication dates by this earliest year (inclusive)")
     parser.add_argument("--end_year", dest="end_year", type=int, default=None, help="filter publication dates by this latest year (inclusive)")
     args = parser.parse_args()
@@ -122,12 +129,10 @@ def display_data(data, write_csv=False, write_maps=False):
 
     if write_maps:
         info("mapping points...")
-        map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes}
+        map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes} 
         map_df = pd.DataFrame(map_dict)
-        global_map = gpd.read_file('../shapefiles/world-map/WB_Land_10m.shp')
-        map_points(map_df, global_map, 'world')
-        us_map = gpd.read_file('../shapefiles/us-map/tl_2012_us_state.shp')
-        map_points(map_df, us_map, 'US')
+        df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
+        map_points(df, 'world')
         info("maps created!")
 
 if __name__ == "__main__":
