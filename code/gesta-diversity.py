@@ -1,16 +1,26 @@
-from operator import truediv
-from readline import insert_text
+import sys
+import argparse
 import requests
 import pandas as pd
 import geopandas as gpd
 
-from mailto import email # just a function that returns your email address
+import parseDetails
 from map import map_points
+from util import increment
+
+VERBOSE = False
+def info(text):
+    global VERBOSE
+    if VERBOSE:
+        print(text)
+
+
 
 class Data():
     def __init__(self):
         self.titles = []
         self.authors = []
+        self.concepts = []
         self.years = []
 
         self.latitudes = []
@@ -20,21 +30,44 @@ class Data():
         self.institutions = {}
         self.institution_ids = set()
 
-
-def main(source_id):
-    issn_l = "0016-920X"
-    source_query = "https://api.openalex.org/sources/" + source_id
+def main(args):
     data = Data()
-    iterate_search(source_id, data)
-    display_data(data, write_maps=True)    
+    if args.journal_name:
+        args.id = get_journal_id(args.journal_name)
+    iterate_search(args, data)
+    display_data(data, write_csv=args.csv, write_maps=args.maps)    
     # TODO: make protocol for what fields to query?
     # ie get institution ID, else get institution name and country, else get author name and country and year?
 
-def increment(key, dict):
-    if key in dict:
-        dict[key] += 1
-    else:
-        dict[key] = 1
+def parseArguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("email", help="the reply-to email for OpenAlex API calls") # required=True,
+    parser.add_argument("-v", "--verbose", action="store_true", help="include to print progress messages")
+    parser.add_argument("-n", "--journal_name", dest="journal_name", type=str, default=None, help="name of journal or source to search for")
+    parser.add_argument("-i", "--journal_id", dest="id", type=str, default="S21591069", help="OpenAlex id of journal to analyze - defaults to Gesta if unspecified") 
+    parser.add_argument("-c", "--write_csv", dest="csv", action="store_true", help="include to write csv of data") 
+    parser.add_argument("-m", "--write_maps", dest="maps", action="store_true", help="include to plot locations of affiliated institutions") 
+    parser.add_argument("--start_year", dest="start_year", type=int, default=None, help="filter publication dates by this earliest year (inclusive)")
+    parser.add_argument("--end_year", dest="end_year", type=int, default=None, help="filter publication dates by this latest year (inclusive)")
+    args = parser.parse_args()
+    if args.verbose: 
+        global VERBOSE 
+        VERBOSE = True
+    return args
+
+def get_journal_id(args):
+    url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
+        results = response.json()
+        if 'id' in results:
+            info("got id of " + args.journal_name) # POSSBUG: multiple journals of same name
+            return results['id']
+    except requests.exceptions.RequestException as e:
+        print("Error occurred:", e)
+    except ValueError as e:
+        print("Error decoding JSON:", e)
 
 def valid_title(title):
     """ 
@@ -47,72 +80,20 @@ def valid_title(title):
             title != "Front Cover" and \
             title != "Back Cover"
 
-
-def parse_work(work, data):
-    """
-        :param work:
-        :param data: partially full Data object
-    """
-    title = work['display_name']
-    if not title: title = 'NA'
-    data.titles.append(title)
-
-    year = str(work['publication_year'])
-    if not year: year = 'NA'
-    data.years.append(year)
-
-    authorship_list = work['authorships']
-    if authorship_list:
-        parse_authorship(authorship_list, data)
-    else:
-        data.authors.append('NA')
-
-def parse_authorship(authorships, data):
-    """
-        :param authorships: list of authorship objects from the OpenAlex API
-        :param data: partially full Data object
-    """
-    author_string = ""
-    for authorship in authorships:
-        author_string += authorship['author']['display_name'] + "\n"
-        for institution in authorship['institutions']:
-            code = institution['country_code']
-            id = institution['id']
-            if id: parse_geodata(id, data)
-            increment(code, data.countries)
-            increment(id, data.institutions)
-            data.institution_ids.add(id)
-    data.authors.append(author_string)
-
-def parse_geodata(id, data):
-    """
-        :param id: - string ID of Institution to check for geodata
-        :param data: - partially full Data object
-    """
-    url =  "https://api.openalex.org/institutions/" + id
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        results = response.json()
-        if 'latitude' in results['geo']:
-            print("got latitude")
-            lat = results['geo']['latitude']
-            long = results['geo']['longitude']
-            data.latitudes.append(lat)
-            data.longitudes.append(long)
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-    except ValueError as e:
-        print("Error decoding JSON:", e)
-
-def iterate_search(source_id, data):
+def iterate_search(args, data):
     """
     :param source_id: string - OpenAlex ID of the source to analyze
     :param data: empty Data object
     """
     # only get name and authors for after 1999
-    works_query_with_page = 'https://api.openalex.org/works?select=display_name,authorships,concepts,publication_year&filter=locations.source.id:' + source_id + '&page={}&mailto=' + email()
-    #publication_year:>1999
+    fields = 'display_name,authorships,concepts,publication_year'
+    search_filters = 'locations.source.id:' + args.id
+    if args.start_year:
+        search_filters += ',publication_year:>' + str(args.start_year - 1)
+    if args.end_year: 
+        search_filters += ',publication_year:<' + str(args.end_year + 1)
+
+    works_query_with_page = 'https://api.openalex.org/works?select=' + fields + '&filter=' + search_filters + '&page={}&mailto=' + args.email
     page = 1
     has_more_pages = True
     fewer_than_10k_results = True
@@ -128,7 +109,7 @@ def iterate_search(source_id, data):
         for i, work in enumerate(results):
             title = work['display_name']
             if valid_title(title):
-                parse_work(work, data)
+                parseDetails.parse_work(work, data)
             
         page += 1
             
@@ -137,6 +118,7 @@ def iterate_search(source_id, data):
         page_size = page_with_results['meta']['per_page']
         has_more_pages = len(results) == page_size
         fewer_than_10k_results = page_size * page <= 10000
+        info("iterating through pages: on page " + str(page))
 
 def display_data(data, write_csv=False, write_maps=False):
     """
@@ -144,13 +126,16 @@ def display_data(data, write_csv=False, write_maps=False):
         :param write_csv: 
     """
     #print(data.institutions)
-    dict = {'author' : data.authors, 'title' : data.titles, 'year' : data.years}
+    dict = {'author' : data.authors, 'title' : data.titles, 'year' : data.years, 'keywords' : data.concepts}
     df = pd.DataFrame(dict)
     print(df.head())
     
-    if write_csv: df.to_csv("../data/data.csv")
+    if write_csv: 
+        info("writing csv...")
+        df.to_csv("../data/data.csv")
 
     if write_maps:
+        info("mapping points...")
         map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes}
         map_df = pd.DataFrame(map_dict)
         global_map = gpd.read_file('../shapefiles/world-map/WB_Land_10m.shp')
@@ -159,6 +144,6 @@ def display_data(data, write_csv=False, write_maps=False):
         map_points(map_df, us_map, 'US')
 
 if __name__ == "__main__":
-    gesta_id = "S21591069"
-    main(gesta_id)
+    args = parseArguments()
+    main(args)
  
