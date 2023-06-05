@@ -33,7 +33,7 @@ In terminal and from directory `gesta-diversity`:
     python diversity.py email [-h] [-v] [-n JOURNAL_NAME] [-i ID] [-c] [-m] [--start_year START_YEAR] [--end_year END_YEAR] 
 
 ### positional arguments:
-  email                 the reply-to email for OpenAlex API calls
+  `email`                   the reply-to email for OpenAlex API calls
 
 #### options:
 
