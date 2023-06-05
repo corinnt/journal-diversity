@@ -8,9 +8,13 @@ Current functionality: Maps locations of institutions with which Gesta-published
 
 *Note:* Script can easily be generalized to other journals via commandline; Gesta is the motivating example and set as default. 
 
-### Use Instructions
+*example to generate maps of publications in Gesta starting in 1999:*
+    
+    python diversity.py your-email@gmail.com -v -m --start_year 1999
 
-In terminal and from directory `gesta-diversity`:
+## Use Instructions
+
+In terminal and from directory `gesta-diversity`
 
 0. For first time set-up, build the conda environment to access the necessary packages:
 <!--- Make code --->
@@ -21,10 +25,6 @@ In terminal and from directory `gesta-diversity`:
     conda activate journal-diversity
 
 2. Run the program:
-
-*example:*
-    
-    python diversity.py your-email@gmail.com -v -m --start_year 1999
 
 ### use in terminal:
 <!--- Make code --->
@@ -41,9 +41,6 @@ In terminal and from directory `gesta-diversity`:
 
   `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
                         name of journal or source to search for
-
-  `-i ID`, `--journal_id ID`
-                        OpenAlex id of journal to analyze - defaults to Gesta if unspecified
 
   `-c`, `--write_csv`       include to write csv of data
 
