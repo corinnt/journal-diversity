@@ -6,15 +6,9 @@ import geopandas as gpd
 
 import parseDetails
 from map import map_points
-from util import increment
+from util import info, valid_title
 
 VERBOSE = False
-def info(text):
-    global VERBOSE
-    if VERBOSE:
-        print(text)
-
-
 
 class Data():
     def __init__(self):
@@ -36,8 +30,6 @@ def main(args):
         args.id = get_journal_id(args.journal_name)
     iterate_search(args, data)
     display_data(data, write_csv=args.csv, write_maps=args.maps)    
-    # TODO: make protocol for what fields to query?
-    # ie get institution ID, else get institution name and country, else get author name and country and year?
 
 def parseArguments():
     parser = argparse.ArgumentParser()
@@ -68,17 +60,6 @@ def get_journal_id(args):
         print("Error occurred:", e)
     except ValueError as e:
         print("Error decoding JSON:", e)
-
-def valid_title(title):
-    """ 
-        Given a title, returns true if the title is not 
-            :param title: prospective title 
-    """
-    return title and\
-            title != "Front Matter" and \
-            title != "Back Matter" and \
-            title != "Front Cover" and \
-            title != "Back Cover"
 
 def iterate_search(args, data):
     """
