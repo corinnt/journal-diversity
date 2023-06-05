@@ -6,7 +6,7 @@ Target functionality: Generate visualizations of trends in gender and region of 
 
 Current functionality: Maps locations of institutions with which Gesta-published authors are affiliated.
 
-*Note:* Script can easily be generalized to other journals via commandline; Gesta is the motivating example and set as default. 
+Note: Script can be generalized to other journals via commandline; Gesta is the motivating example and set as default. 
 
 *example to generate maps of publications in Gesta starting in 1999:*
     
