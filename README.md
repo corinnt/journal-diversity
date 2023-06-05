@@ -52,7 +52,6 @@ In terminal and from directory `gesta-diversity`:
   `-m`, `--write_maps`      include to plot locations of affiliated institutions
 
   `--start_year START_YEAR` 
-
                         filter publications by this earliest year (inclusive)
 
   `--end_year END_YEAR`   filter publications by this latest year (inclusive)
