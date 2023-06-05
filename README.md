@@ -37,24 +37,25 @@ In terminal and from directory `gesta-diversity`:
 
 #### options:
 
-  -h, --help            show this help message and exit
+  `-h`, `--help`            show this help message and exit
 
-  -v, --verbose         include to print progress messages
+  `-v`, `--verbose`         include to print progress messages
 
-  -n --journal_name JOURNAL_NAME
+  `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
                         name of journal or source to search for
 
-  -i --journal_id ID
+  `-i ID`, `--journal_id ID`
                         OpenAlex id of journal to analyze - defaults to Gesta if unspecified
 
-  -c, --write_csv       include to write csv of data
+  `-c`, `--write_csv`       include to write csv of data
 
-  -m, --write_maps      include to plot locations of affiliated institutions
+  `-m`, `--write_maps`      include to plot locations of affiliated institutions
 
-  --start_year START_YEAR 
+  `--start_year START_YEAR` 
+
                         filter publications by this earliest year (inclusive)
 
-  --end_year END_YEAR   filter publications by this latest year (inclusive)
+  `--end_year END_YEAR`   filter publications by this latest year (inclusive)
 
 
 Thank you to OpenAlex:
