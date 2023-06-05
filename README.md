@@ -16,21 +16,21 @@ Note: Script can be generalized to other journals via commandline; Gesta is the 
 
 In terminal and from directory `gesta-diversity`
 
-0. For first time set-up, build the conda environment to access the necessary packages:
+### 0. For first time set-up, build the conda environment to access the necessary packages:
 <!--- Make code --->
      conda env create -f journal-diversity.yml
 
-1. Activate the environment:
+### 1. Activate the environment:
 <!--- Make code --->
     conda activate journal-diversity
 
-2. Run the program:
+### 2. Run the program:
 
-### use in terminal:
+#### use in terminal:
 <!--- Make code --->
     python diversity.py email [-h] [-v] [-n JOURNAL_NAME] [-i ID] [-c] [-m] [--start_year START_YEAR] [--end_year END_YEAR] 
 
-### positional arguments:
+#### positional arguments:
   `email`                   the reply-to email for OpenAlex API calls
 
 #### options:
@@ -57,6 +57,7 @@ Thank you to OpenAlex:
     Priem, J., Piwowar, H., & Orr, R. (2022). OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts. ArXiv. https://arxiv.org/abs/2205.01833
 
 And to PyGMT:
+
     Wessel, P., Luis, J. F., Uieda, L., Scharroo, R., Wobbe, F., Smith, W. H. F., & Tian, D. (2019). The Generic Mapping Tools version 6. Geochemistry, Geophysics, Geosystems, 20, 5556– 5564. https://doi.org/10.1029/2019GC008515
 
 ## To-Do
