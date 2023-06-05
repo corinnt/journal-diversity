@@ -4,9 +4,9 @@ Gesta is a leading peer-reviewed academic journal in the area of medieval art.
 
 Target functionality: Generate visualizations of trends in gender and region of origin of Gesta-published authors.
 
-Current functionality: Maps locations of institutions with which Gesta-published authors are affiliated.
+Current functionality: Maps the locations of institutions with which Gesta-published authors are affiliated.
 
-Note: Script can be generalized to other journals via commandline; Gesta is the motivating example and set as default. 
+Note: Script can be used to analyze other journals via commandline; Gesta is the motivating example and set as default. 
 
 *example to generate maps of publications in Gesta starting in 1999:*
     
