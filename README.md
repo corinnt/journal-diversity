@@ -10,16 +10,9 @@ Current functionality: Maps locations of institutions with which Gesta-published
 
 ### Use Instructions
 
-After cloning, add the following function which returns your email address to `mailto.py`. This will be a commandline argument later. 
-
-This is the address used as the reply-to for OpenAlex API calls.  
-
-    def email():
-        return your_address@gmail.com
-
 In terminal and from directory `gesta-diversity`:
 
-0. For first time set-up, build the conda environment which will allow access to all necessary packages:
+0. For first time set-up, build the conda environment to access the necessary packages:
 <!--- Make code --->
      conda env create -f journal-diversity.yml
 
@@ -28,7 +21,12 @@ In terminal and from directory `gesta-diversity`:
     conda activate journal-diversity
 
 2. Run the program:
-### usage in terminal:
+
+*example:*
+    
+    python diversity.py your-email@gmail.com -v -m --start_year 1999
+
+### use in terminal:
 <!--- Make code --->
     python diversity.py email [-h] [-v] [-n JOURNAL_NAME] [-i ID] [-c] [-m] [--start_year START_YEAR] [--end_year END_YEAR] 
 
@@ -61,9 +59,12 @@ Thank you to OpenAlex:
 
     Priem, J., Piwowar, H., & Orr, R. (2022). OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts. ArXiv. https://arxiv.org/abs/2205.01833
 
+And to PyGMT:
+    Wessel, P., Luis, J. F., Uieda, L., Scharroo, R., Wobbe, F., Smith, W. H. F., & Tian, D. (2019). The Generic Mapping Tools version 6. Geochemistry, Geophysics, Geosystems, 20, 5556– 5564. https://doi.org/10.1029/2019GC008515
+
 ## To-Do
 
--  make protocol for what fields to query to get locations?
+-  make protocol for what fields to query to get locations if they don't have the coordinates?
     ie get institution ID, else get institution name and country, else get author name and country and year?
 - look into Genderize API to get gender stats
 - look into reconstructing abstracts from one-hot encoding
