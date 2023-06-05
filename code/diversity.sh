@@ -1,1 +1,0 @@
-python gesta-diversity.py

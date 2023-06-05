@@ -1,15 +1,9 @@
-from diversity import VERBOSE 
 
 def increment(key, dict):
     if key in dict:
         dict[key] += 1
     else:
         dict[key] = 1
-
-def info(text):
-    global VERBOSE
-    if VERBOSE:
-        print(text)
 
 def valid_title(title):
     """ 

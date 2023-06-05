@@ -1,5 +1,6 @@
 import requests
-from util import increment, info
+from util import increment
+from diversity import info
 
 def parse_work(work, data):
     """
@@ -61,7 +62,6 @@ def parse_geodata(id, data):
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
         results = response.json()
         if 'latitude' in results['geo']:
-            info("got a latitude and longitude")
             lat = results['geo']['latitude']
             long = results['geo']['longitude']
             data.latitudes.append(lat)

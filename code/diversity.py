@@ -6,9 +6,14 @@ import geopandas as gpd
 
 import parseDetails
 from map import map_points
-from util import info, valid_title
+from util import valid_title
+
 
 VERBOSE = False
+def info(text):
+    global VERBOSE
+    if VERBOSE:
+        print(text)
 
 class Data():
     def __init__(self):
@@ -123,6 +128,7 @@ def display_data(data, write_csv=False, write_maps=False):
         map_points(map_df, global_map, 'world')
         us_map = gpd.read_file('../shapefiles/us-map/tl_2012_us_state.shp')
         map_points(map_df, us_map, 'US')
+        info("maps created!")
 
 if __name__ == "__main__":
     args = parseArguments()

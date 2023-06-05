@@ -4,12 +4,10 @@ import descartes
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
 
-
-
 def map_points(df, map, name): 
     """
-        :param points: list of tuples of latitudes and longitudes
-        :param csv_path: path to csv with data to map
+        :param df: DataFrame with longitude and latitude data for points
+        :param map: GeoPandas
     """ 
     geometry = [Point(xy) for xy in zip(df['longitude'], df['latitude'])]
     fig, ax = plt.subplots(figsize=(15,15))
