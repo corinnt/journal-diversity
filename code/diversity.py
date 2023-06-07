@@ -27,11 +27,6 @@ class Data():
 
         self.latitudes = []
         self.longitudes = []
-        self.coordinates = {}
-
-        self.countries = {}
-        self.institutions = {}
-        self.institution_ids = set()
 
         self.config = args
         self.id = None
@@ -135,7 +130,9 @@ def display_data(data):
             #'last known institution' : data.last_known_institutions,
             'latitude' : data.latitudes, 
             'longitude' : data.longitudes}
-    if data.config.write_abstracts: dict['abstract'] = data.abstracts
+
+    if data.config.write_abstracts: 
+        dict['abstract'] = data.abstracts
     df = pd.DataFrame(dict)
     info(df.head())
     

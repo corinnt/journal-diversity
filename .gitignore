@@ -1,5 +1,4 @@
-mailto.py 
-/shapefiles
 *.jpg
 *.shp
 *.csv
+*/__pycache__/

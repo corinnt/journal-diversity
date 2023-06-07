@@ -8,14 +8,17 @@ def increment(key, dict):
 
 def valid_title(title):
     """ 
-        Given a title, returns true if the title is not 
+        Given a title, returns true if the title is not one of the "issue components"
             :param title: prospective title 
     """
     return title and\
             title != "Front Matter" and \
             title != "Back Matter" and \
             title != "Front Cover" and \
-            title != "Back Cover"
+            title != "Back Cover" and \
+            title != "Volume Information" and\
+            "the following abbreviations are used in this issue" not in title.lower()
+
 
 def pickle_data(data):
     """ Takes in populated Data object.
@@ -34,19 +37,20 @@ def unpickle_data(path):
     return data
 
 def decode_inverted(inverted_index, data):
-    """ Converts a dictionary of word : [indices] to plain text and adds it to Data's list of abstracts
-        :param inverted_index: 
-        :param data: 
+    """ Converts an inverted index to plain text and adds it to Data's list of abstracts
+        :param inverted_index: dict of word : [indices] representing an abstract
+        :param data: partially filled Data objedct
     """
     if not inverted_index:
         data.abstracts.append('NA')
-    else:
-        word_index = [] 
-        for k, v in inverted_index.items():
-            for index in v:
-                word_index.append([k, index])
+        return
+    word_index = [] 
+    for k, v in inverted_index.items():
+        for index in v:
+            word_index.append([k, index])
 
-        sorted_tuples = sorted(word_index, key = lambda x : x[1])
-        words = [word[0] for word in sorted_tuples]
-        words = ' '.join(words)
-        data.abstracts.append(words)
+    sorted_tuples = sorted(word_index, key = lambda x : x[1])
+    words = [word[0] for word in sorted_tuples]
+    words = ' '.join(words)
+    #add to data object
+    data.abstracts.append(words)
