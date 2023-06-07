@@ -2,13 +2,13 @@ import sys
 import argparse
 import requests
 import pandas as pd
+import numpy as np
 
 from tqdm import tqdm
 
 import parseDetails
 from map import map_points
 from util import valid_title, unpickle_data, pickle_data
-
 
 VERBOSE = False
 def info(text):
@@ -23,6 +23,7 @@ class Data():
         self.abstracts = []
         self.concepts = []
         self.years = []
+        self.institution_names = []
 
         self.latitudes = []
         self.longitudes = []
@@ -120,15 +121,20 @@ def iterate_search(args, data):
         page_size = page_with_results['meta']['per_page']
         has_more_pages = len(results) == page_size
         fewer_than_10k_results = page_size * page <= 10000
-        #info("iterating through pages: on page " + str(page))
+        if page % 5 == 0:
+            info("iterating through pages: on page " + str(page))
 
 def display_data(data):
     """
-        :param data: filled Data object 
-        :param write_csv: 
+        :param data: filled Data object with config fields write_csv, maps, 
     """
-    dict = {'author' : data.authors, 'title' : data.titles, 'year' : data.years}
-    print(data)
+    dict = {'author' : data.authors, 
+            'title' : data.titles, 
+            'year' : data.years,
+            'institution' : data.institution_names, 
+            #'last known institution' : data.last_known_institutions,
+            'latitude' : data.latitudes, 
+            'longitude' : data.longitudes}
     if data.config.write_abstracts: dict['abstract'] = data.abstracts
     df = pd.DataFrame(dict)
     info(df.head())

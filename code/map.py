@@ -1,5 +1,4 @@
 import pygmt
-import numpy as np
 
 def map_points(df, name): 
     """region = [
@@ -29,7 +28,7 @@ def map_points(df, name):
     fig.plot(
         x=df.longitude,
         y=df.latitude,
-        size=0.09 * df.counts,
+        size=0.08 + (0.03 * df.counts),
         style="cc",
         fill="black",
         #pen="gray40",
