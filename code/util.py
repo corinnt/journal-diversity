@@ -1,5 +1,11 @@
 import pickle
 
+VERBOSE = False
+def info(text):
+    global VERBOSE
+    if VERBOSE:
+        print(text)
+
 def increment(key, dict):
     if key in dict:
         dict[key] += 1
@@ -18,7 +24,6 @@ def valid_title(title):
             title != "Back Cover" and \
             title != "Volume Information" and\
             "the following abbreviations are used in this issue" not in title.lower()
-
 
 def pickle_data(data):
     """ Takes in populated Data object.
@@ -54,3 +59,4 @@ def decode_inverted(inverted_index, data):
     words = ' '.join(words)
     #add to data object
     data.abstracts.append(words)
+

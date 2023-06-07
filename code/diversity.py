@@ -7,14 +7,9 @@ import numpy as np
 from tqdm import tqdm
 
 import parseDetails
-from map import map_points
-from util import valid_title, unpickle_data, pickle_data
+import util
 
-VERBOSE = False
-def info(text):
-    global VERBOSE
-    if VERBOSE:
-        print(text)
+from map import map_points
 
 class Data():
     def __init__(self, args):
@@ -45,8 +40,7 @@ def parseArguments():
     parser.add_argument("--end_year", dest="end_year", type=int, default=None, help="filter publication dates by this latest year (inclusive)")
     args = parser.parse_args()
     if args.verbose: 
-        global VERBOSE 
-        VERBOSE = True
+        util.VERBOSE = True
     return args
 
 def main(args):
@@ -58,10 +52,10 @@ def main(args):
         data.num_works = 1091
 
     if args.restore_saved:
-        data = unpickle_data('../data/pickled_data')
+        data = util.unpickle_data('../data/pickled_data')
     else:
         iterate_search(args, data)
-        pickle_data(data)
+        util.pickle_data(data)
 
     display_data(data)    
 
@@ -72,7 +66,7 @@ def get_journal_id(args):
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
         results = response.json()
         if 'id' in results: 
-            info("got id of " + args.journal_name) # POSSBUG: multiple journals of same name
+            util.info("got id of " + args.journal_name) # POSSBUG: multiple journals of same name
             return results['id']
     except requests.exceptions.RequestException as e:
         print("Error occurred:", e)
@@ -107,7 +101,7 @@ def iterate_search(args, data):
         results = page_with_results['results']
         for i, work in enumerate(results):
             title = work['display_name']
-            if valid_title(title):
+            if util.valid_title(title):
                 parseDetails.parse_work(work, data)
             
         page += 1
@@ -116,8 +110,9 @@ def iterate_search(args, data):
         page_size = page_with_results['meta']['per_page']
         has_more_pages = len(results) == page_size
         fewer_than_10k_results = page_size * page <= 10000
+        
         if page % 5 == 0:
-            info("iterating through pages: on page " + str(page))
+            util.info("iterating through pages: on page " + str(page))
 
 def display_data(data):
     """
@@ -134,19 +129,19 @@ def display_data(data):
     if data.config.write_abstracts: 
         dict['abstract'] = data.abstracts
     df = pd.DataFrame(dict)
-    info(df.head())
+    util.info(df.head())
     
     if data.config.csv: 
-        info("writing csv...")
+        util.info("writing csv...")
         df.to_csv("../data/data.csv")
 
     if data.config.maps:
-        info("mapping points...")
+        util.info("mapping points...")
         map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes} 
         map_df = pd.DataFrame(map_dict)
         df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
         map_points(df, 'world')
-        info("maps created!")
+        util.info("maps created!")
 
 if __name__ == "__main__":
     args = parseArguments()
