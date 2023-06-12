@@ -43,6 +43,8 @@ In terminal and from directory `gesta-diversity`
 
   `-m`, `--write_maps`      include to plot locations of affiliated institutions
 
+  `-g`, `--predict_genders` include to predict genders of all authors and write to csv
+
   `--start_year START_YEAR` 
                             filter publications by this earliest year (inclusive)
 
