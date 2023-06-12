@@ -60,3 +60,24 @@ def decode_inverted(inverted_index, data):
     #add to data object
     data.abstracts.append(words)
 
+def predict_gender(authors):
+    """ TODO: need to extract first names not full names
+        might want to add this functionality while they're still lists too
+    """
+    genders = []
+    batch = []
+    BATCH_SIZE = 10
+    authors_remaining = len(authors)
+    batch_start = 0
+    while authors_remaining:
+        if authors_remaining > BATCH_SIZE:
+            batch = authors[batch_start:BATCH_SIZE]
+        else: 
+            batch = authors[batch_start:]
+
+        # genders += batch request
+        
+        batch_start += BATCH_SIZE
+        authors_remaining -= BATCH_SIZE
+
+    return genders
