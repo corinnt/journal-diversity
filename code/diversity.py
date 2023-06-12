@@ -34,6 +34,7 @@ def parseArguments():
     parser.add_argument("-n", "--journal_name", dest="journal_name", type=str, default=None, help="name of journal or source to search for")
     parser.add_argument("-c", "--write_csv", dest="csv", action="store_true", help="include to write csv of data") 
     parser.add_argument("-a", "--write_abstracts", action="store_true", help="include to write abstracts of all works to csv") 
+    parser.add_argument("-g", "--predict_gender", action="store_true", help="include to predict genders of all authors and write to csv") 
     parser.add_argument("-m", "--write_maps", dest="maps", action="store_true", help="include to plot locations of affiliated institutions") 
     parser.add_argument("-r", "--restore_saved", action="store_true", help="include to restore saved data") 
     parser.add_argument("--start_year", dest="start_year", type=int, default=None, help="filter publication dates by this earliest year (inclusive)")
@@ -128,6 +129,11 @@ def display_data(data):
 
     if data.config.write_abstracts: 
         dict['abstract'] = data.abstracts
+        
+    if data.config.gender:
+        genders = util.predict_gender(data.authors)
+        dict['predicted gender'] = genders
+
     df = pd.DataFrame(dict)
     util.info(df.head())
     
