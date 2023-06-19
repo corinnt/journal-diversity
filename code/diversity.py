@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 import parseDetails
 import util
+import gender
 
 from map import map_points
 
@@ -19,26 +20,40 @@ class Data():
         self.concepts = []
         self.years = []
         self.institution_names = []
+        self.genders = []
+        self.author_ids = []
 
         self.latitudes = []
         self.longitudes = []
 
         self.config = args
         self.id = None
-        #self.num_works = 0
+        self.num_works = 0
 
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("email", help="the reply-to email for OpenAlex API calls") # required=True,
     parser.add_argument("-v", "--verbose", action="store_true", help="include to print progress messages")
-    parser.add_argument("-n", "--journal_name", dest="journal_name", type=str, default=None, help="name of journal or source to search for")
-    parser.add_argument("-c", "--write_csv", dest="csv", action="store_true", help="include to write csv of data") 
-    parser.add_argument("-a", "--write_abstracts", action="store_true", help="include to write abstracts of all works to csv") 
-    parser.add_argument("-g", "--predict_gender", action="store_true", help="include to predict genders of all authors and write to csv") 
-    parser.add_argument("-m", "--write_maps", dest="maps", action="store_true", help="include to plot locations of affiliated institutions") 
+
+    parser.add_argument("-n", "--journal_name", dest="journal_name", 
+        type=str, default=None, help="name of journal or source to search for")
+
+    parser.add_argument("-c", "--write_csv", dest="csv", 
+        action="store_true", help="include to write csv of data") 
+
+    parser.add_argument("-a", "--write_abstracts", dest="abstracts", 
+        action="store_true", help="include to write abstracts of all works to csv") 
+
+    parser.add_argument("-g", "--predict_gender", dest="gender", 
+        action="store_true", help="include to predict genders of all authors and write to csv") 
+
+    parser.add_argument("-m", "--write_maps", dest="maps", 
+        action="store_true", help="include to plot locations of affiliated institutions") 
+
     parser.add_argument("-r", "--restore_saved", action="store_true", help="include to restore saved data") 
     parser.add_argument("--start_year", dest="start_year", type=int, default=None, help="filter publication dates by this earliest year (inclusive)")
     parser.add_argument("--end_year", dest="end_year", type=int, default=None, help="filter publication dates by this latest year (inclusive)")
+
     args = parser.parse_args()
     if args.verbose: 
         util.VERBOSE = True
@@ -47,7 +62,7 @@ def parseArguments():
 def main(args):
     data = Data(args)
     if args.journal_name:
-        data.id = get_journal_id(args.journal_name)
+        data.id, data.num_works = get_journal_id(args.journal_name)
     else:
         data.id = 'S21591069' # Default Gesta
         data.num_works = 1091
@@ -61,18 +76,23 @@ def main(args):
     display_data(data)    
 
 def get_journal_id(args):
+    """ Returns the OpenAlex Work ID of the top result matching the input journal name
+    :param args: parsed user argument object
+    :returns str, int: ID of journal, count of Works in source
+    """
     url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        results = response.json()
-        if 'id' in results: 
-            util.info("got id of " + args.journal_name) # POSSBUG: multiple journals of same name
-            return results['id']
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-    except ValueError as e:
-        print("Error decoding JSON:", e)
+    results = util.openalex_request(url)
+    if not results: return "", 0
+
+    if len(results['results']) > 0:
+        top_result = results['results'][0]
+
+    if 'id' in top_result: 
+        util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
+        return top_result['id'], top_result['works_count']
+    else: 
+        print("No results found.")
+        return "", 0
 
 def iterate_search(args, data):
     """
@@ -100,7 +120,7 @@ def iterate_search(args, data):
             
         # loop through page of results
         results = page_with_results['results']
-        for i, work in enumerate(results):
+        for work in results:
             title = work['display_name']
             if util.valid_title(title):
                 parseDetails.parse_work(work, data)
@@ -117,26 +137,26 @@ def iterate_search(args, data):
 
 def display_data(data):
     """
-        :param data: filled Data object with config fields write_csv, maps, 
+        :param data: filled Data object with config fields write_csv, maps, gender
     """
     dict = {'author' : data.authors, 
             'title' : data.titles, 
             'year' : data.years,
             'institution' : data.institution_names, 
-            #'last known institution' : data.last_known_institutions,
             'latitude' : data.latitudes, 
             'longitude' : data.longitudes}
-
-    if data.config.write_abstracts: 
-        dict['abstract'] = data.abstracts
         
+    if data.config.abstracts: 
+        dict['abstract'] = data.abstracts
+
     if data.config.gender:
-        genders = util.predict_gender(data.authors)
-        dict['predicted gender'] = genders
+        genders = gender.predict_gender(data.authors)
+        data.genders = genders
+        dict['predicted gender'] = data.genders
 
     df = pd.DataFrame(dict)
     util.info(df.head())
-    
+
     if data.config.csv: 
         util.info("writing csv...")
         df.to_csv("../data/data.csv")

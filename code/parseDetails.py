@@ -3,7 +3,6 @@ import numpy as np
 import util
 import diversity
 
-
 def parse_work(work, data):
     """
         :param work: single Work object from OpenAlex
@@ -19,7 +18,9 @@ def parse_work(work, data):
 
     if data.config.write_abstracts:
         inverted_index = work['abstract_inverted_index']
-        util.decode_inverted(inverted_index, data)
+        words = util.decode_inverted(inverted_index)
+        text = ' '.join(words)
+        data.abstracts.append(text)
         
     authorship_list = work['authorships']
     parse_authorship(authorship_list, data)
@@ -34,15 +35,16 @@ def parse_concepts(concepts, data):
     """
     if not concepts:
         data.concepts.append('NA')
-    else:
-        concept_string = ""
-        for concept in concepts:
-            if concept['score'] > 0.3:
-                concept_string += concept['display_name'] + "; "
-        data.concepts.append(concept_string)
+        return
+    concept_string = ""
+    for concept in concepts:
+        if concept['score'] > 0.3:
+            concept_string += concept['display_name'] + "; "
+    data.concepts.append(concept_string)
 
 def parse_authorship(authorships, data):
-    """
+    """ Adds Authorship information (names of authors, their institutions, and the location of their institution) to Data object
+        The first Author in the list whose institution has geodata will be mapped. 
         :param authorships: list of authorship objects from the OpenAlex API
         :param data: partially full Data object
     """
@@ -51,38 +53,36 @@ def parse_authorship(authorships, data):
         data.institution_names.append('NA')
         data.latitudes.append(np.nan)
         data.longitudes.append(np.nan)
-    else:
-        author_string = ""
-        institution_string = ""
-        mapped = False
-        for authorship in authorships:
-            author_string += authorship['author']['display_name'] + "; "
-            institution_name = ""
-            for institution in authorship['institutions']:
-                institution_name = institution['display_name'] # need to add this name to string in case Work is already mapped
-                
-                institution_id = institution['id']
-                if not mapped and institution_id:                          # will add longitude and latitude of first institution with geodata
-                    mapped, institution_name = parse_geodata(institution_id, data)
-                
-            author_id = authorship['author']['id']
-            if not mapped and author_id:
-                mapped, institution_name = alternate_geodata(author_id, data)
+        return
 
-            if institution_name: 
-                institution_string += institution_name + "; "
-            else:
-                institution_string += "NA;"               #used if already mapped, but display_name not in data 
+    author_names = []
+    institution_names = []
+    mapped = False
 
-        if not author_string: author_string += 'NA'           # used if institution for-loops don't run
-        if not institution_string: institution_string += 'NA'
+    for authorship in authorships:
+        institution_name = ""
+        for institution in authorship['institutions']:
+            institution_name = institution['display_name'] # need to add this name to string in case Work is already mapped
+            institution_id = institution['id']
+            if not mapped and institution_id:              # will add longitude and latitude of first institution with geodata
+                mapped, institution_name = parse_geodata(institution_id, data)
+            institution_names.append(institution_name)
+        author_id = authorship['author']['id']
 
-        data.authors.append(author_string)                          
-        data.institution_names.append(institution_string)
+        if not mapped and author_id:
+            mapped, institution_name = alternate_geodata(author_id, data)
 
-        if not mapped:
-            data.latitudes.append(np.nan)
-            data.longitudes.append(np.nan)
+        author_names.append(authorship['author']['display_name'])
+
+    institution_string = util.namelist_to_string(institution_names)
+    author_string = util.namelist_to_string(author_names)
+
+    data.institution_names.append(institution_string)
+    data.authors.append(author_string)                          
+
+    if not mapped:
+        data.latitudes.append(np.nan)
+        data.longitudes.append(np.nan)
 
 def parse_geodata(id, data):
     """
@@ -90,32 +90,23 @@ def parse_geodata(id, data):
         :param data: - partially full Data object
         :returns bool: - True if successfully added coordinates
     """
-    url =  "https://api.openalex.org/institutions/" + id
-    results = {}
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        results = response.json()
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-        return False, 'NA'
-    except ValueError as e:
-        print("Error decoding JSON:", e)
-        util.info("false from 103")
-        return False, 'NA'
-
-    display_name = results['display_name']
     if not id: 
-        util.info("false from 108")
+        util.info("Blank ID passed to parse_geodata")
         return False, ""
-    if 'latitude' in results['geo']:
-        lat = results['geo']['latitude']
-        long = results['geo']['longitude']
+
+    url =  "https://api.openalex.org/institutions/" + id
+    institution = util.openalex_request(url)
+    if not institution: return False, 'NA'
+
+    display_name = institution['display_name']
+    if 'latitude' in institution['geo']:
+        lat = institution['geo']['latitude']
+        long = institution['geo']['longitude']
         data.latitudes.append(lat)
         data.longitudes.append(long)
         return True, display_name
     else:
-        util.info("false from 117")
+        util.info("Geo information unavailable for " + display_name)
         return False, display_name
 
 def alternate_geodata(id, data):
@@ -126,21 +117,11 @@ def alternate_geodata(id, data):
     """
     if not id: return False
     url =  "https://api.openalex.org/authors/" + id
-    author = {}
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        author = response.json()
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-        return False, 'NA'
-    except ValueError as e:
-        print("Error decoding JSON:", e)
-        return False, 'NA'
+    author = util.openalex_request(url)
+    if not author: return False, 'NA'
 
     if author['last_known_institution']:
         institution_id = author['last_known_institution']['id']
-        util.info("attempting last known...")
         mapped, name = parse_geodata(institution_id, data)
         util.info("adding last known institution " + name)
         return mapped, "last known: " + name
