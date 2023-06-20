@@ -1,3 +1,4 @@
+from operator import invert
 import pickle
 import requests
 
@@ -13,11 +14,12 @@ def increment(key, dict):
     else:
         dict[key] = 1
 
-def unique(list):
+def unique(duplicates):
     """ Given a list, return that list without duplicates
     """
     uniques = set()
-    uniques.update(list)
+    uniques.update(duplicates)
+
     return list(uniques)
 
 def openalex_request(url):
@@ -74,41 +76,49 @@ def namelist_to_string(names):
     names = [deNone(name) for name in names]
     if len(names) > 0: 
         string = '; '.join(names)
-    #elif len(names) == 1: string = names[0]
     else: string = 'NA'
     return string
 
-def reformat_as_strings(genders, list_structure):
-    """ Given a list of genders and a list of ints representing list lengths, 
-    returns genders as a list of lists reformatted to the list_structure specifications
-    
-    """
-    gender_strings = []
+#def reformat_as_strings(loose_items, list_structure):
+def reformat_as_strings(item_and_index):
+    """ Given a list of tuples pairing strings to indices,
+    returns as a list of strings with  specifications
+
+    strings = []
     list_structure.sort(key = lambda pair : pair[1])
     print(list_structure)
-
-    old_index = list_structure[0][1]
+    base = 0
+    old_index = list_structure[0]
     for name, index in list_structure:
         if old_index is not index: 
             mini_list = []
         else:
-            mini_list.append(genders[base + n])
+            mini_list.append(loose_items[base + n])
         single_string = namelist_to_string(mini_list)
-        gender_strings.append(single_string)
-        
-    return gender_strings
+        strings.append(single_string)
+        old_index = index.copy()
+    base += 1
 
-def encode_inverted(list):
-    """ TODO: documentation
+    return strings
     """
-    if not list: 
-        info("Encoded empty inverted_index.")
-        return {}
-
-    inverted_index = {name : [] for name in list}
-    for name, i in enumerate(list):
-        inverted_index[name].append(i)
-    return inverted_index
+    if not item_and_index: return []
+    strings = []
+    item_and_index.sort(key = lambda pair : pair[1])
+    prev_index, mini_list = 0, []
+    for item, index in item_and_index:
+        if prev_index is not index:
+            single_string = namelist_to_string(mini_list) #convert accrued list of names to string
+            strings.append(single_string)
+            prev_index = index.copy()
+            mini_list = []
+        else:
+            mini_list.append(item)
+            
+def add_to_inverted_index(key, index, inverted_index):
+    if key not in inverted_index:
+        inverted_index[key] = [index]
+    else:
+        inverted_index[key].append(index)
 
 def decode_inverted(inverted_index, return_tuples=False):
     """ Converts an inverted index to list of words in the correct order

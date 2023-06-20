@@ -16,7 +16,7 @@ def parse_work(work, data):
     if not year: year = 'NA'
     data.years.append(year)
 
-    if data.config.write_abstracts:
+    if data.config.abstracts:
         inverted_index = work['abstract_inverted_index']
         words = util.decode_inverted(inverted_index)
         text = ' '.join(words)
