@@ -136,7 +136,7 @@ def iterate_search(args, data):
             util.info("iterating through pages: on page " + str(page))
 
 def display_data(data):
-    """
+    """ Displays visualizations and/or writes data csv as dictated by commandline args
         :param data: filled Data object with config fields write_csv, maps, gender
     """
     dict = {'author' : data.authors, 

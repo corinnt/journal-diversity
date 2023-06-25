@@ -39,6 +39,7 @@ def valid_title(title):
     """ 
         Given a title, returns true if the title is not one of the "issue components"
             :param title: prospective title 
+            :returns bool: True if valid
     """
     return title and\
             title != "Front Matter" and \
@@ -68,53 +69,46 @@ def deNone(name):
     if not name: return 'NA' 
     else: return name
 
-def namelist_to_string(names):
+def namelist2string(names):
     """ Converts a list of strings to a single string w/ itmes sepaarated by '; ' 
         None values included as 'NA' to maintain length/indicate absence
     """
-    
     names = [deNone(name) for name in names]
     if len(names) > 0: 
         string = '; '.join(names)
     else: string = 'NA'
     return string
 
-#def reformat_as_strings(loose_items, list_structure):
-def reformat_as_strings(item_and_index):
+def reformat_as_strings(ordered_tuples):
     """ Given a list of tuples pairing strings to indices,
-    returns as a list of strings with  specifications
-
-    strings = []
-    list_structure.sort(key = lambda pair : pair[1])
-    print(list_structure)
-    base = 0
-    old_index = list_structure[0]
-    for name, index in list_structure:
-        if old_index is not index: 
-            mini_list = []
-        else:
-            mini_list.append(loose_items[base + n])
-        single_string = namelist_to_string(mini_list)
-        strings.append(single_string)
-        old_index = index.copy()
-    base += 1
-
-    return strings
+    returns as a list of strings with strings of same index joined by namelist2string
+    :param ordered_tuples: list[(str, int)]
+    :returns strings: list[str]
     """
-    if not item_and_index: return []
+    if not ordered_tuples: return []
     strings = []
-    item_and_index.sort(key = lambda pair : pair[1])
+    #ordered_tuples.sort(key = lambda pair : pair[1]) already sorted?
     prev_index, mini_list = 0, []
-    for item, index in item_and_index:
+    for item, index in ordered_tuples:
         if prev_index is not index:
-            single_string = namelist_to_string(mini_list) #convert accrued list of names to string
+            single_string = namelist2string(mini_list) #convert accrued list of names to string
             strings.append(single_string)
-            prev_index = index.copy()
-            mini_list = []
+            prev_index = index
+            mini_list = [item]
         else:
             mini_list.append(item)
+            prev_index = index
+    final_string = namelist2string(mini_list) #sweep up the final string that just got added to mini_list
+    strings.append(final_string)
+    return strings
             
 def add_to_inverted_index(key, index, inverted_index):
+    """ Given a key, index, and inverted_index, adds the key-index pair to the inverted index
+            :param key: str to be added
+            :param index: int index where the key occurs in the original text
+            :param inverted_index: dict(str -> [indices])
+            :returns None:
+    """
     if key not in inverted_index:
         inverted_index[key] = [index]
     else:
@@ -122,7 +116,9 @@ def add_to_inverted_index(key, index, inverted_index):
 
 def decode_inverted(inverted_index, return_tuples=False):
     """ Converts an inverted index to list of words in the correct order
-        :param inverted_index: dict of word : [indices] representing an abstract
+            :param inverted_index: dict of word : [indices] representing an abstract
+            :param return_tuples: default False, when True, returns list of tuples not list of strings
+            :returns list: default list of ordered words, ^ may be list of (str, int) tuples sorted by int
     """
     if not inverted_index: return 'NA'
 
