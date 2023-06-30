@@ -19,10 +19,12 @@ def unique(duplicates):
     """
     uniques = set()
     uniques.update(duplicates)
+    uniques_list = list(uniques)
+    return uniques_list
 
-    return list(uniques)
-
-def openalex_request(url):
+def api_request(url):
+    """
+    """
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
@@ -54,14 +56,14 @@ def pickle_data(data):
         Writes pickled files to data/pickled_data. 
     """
     destination = "../data/pickled_data"
-    pickled_data = open(destination, "wb")
+    pickled_data = open(destination, 'wb')
     pickle.dump(data, pickled_data)
 
 def unpickle_data(path):
     """ Takes in filepath to the pickled Data object from a previous run
         Returns the unpickled Data object.
     """
-    pickled_data = open(path, "rb")
+    pickled_data = open(path, 'rb')
     data = pickle.load(pickled_data)
     return data
 
@@ -70,7 +72,7 @@ def deNone(name):
     else: return name
 
 def namelist2string(names):
-    """ Converts a list of strings to a single string w/ itmes sepaarated by '; ' 
+    """ Converts a list of strings to a single string w/ items sepaarated by '; ' 
         None values included as 'NA' to maintain length/indicate absence
     """
     names = [deNone(name) for name in names]
@@ -87,7 +89,7 @@ def reformat_as_strings(ordered_tuples):
     """
     if not ordered_tuples: return []
     strings = []
-    #ordered_tuples.sort(key = lambda pair : pair[1]) already sorted?
+    ordered_tuples.sort(key = lambda pair : pair[1]) #already sorted?
     prev_index, mini_list = 0, []
     for item, index in ordered_tuples:
         if prev_index is not index:

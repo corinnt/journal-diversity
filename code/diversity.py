@@ -20,8 +20,9 @@ class Data():
         self.concepts = []
         self.years = []
         self.institution_names = []
-        self.genders = []
+        self.gender_strings = []
         self.author_ids = []
+        self.gender_data = None
 
         self.latitudes = []
         self.longitudes = []
@@ -60,7 +61,9 @@ def parseArguments():
     return args
 
 def main(args):
+    
     data = Data(args)
+
     if args.journal_name:
         data.id, data.num_works = get_journal_id(args.journal_name)
     else:
@@ -69,20 +72,25 @@ def main(args):
 
     if args.restore_saved:
         data = util.unpickle_data('../data/pickled_data')
+        display_data(data)    
     else:
         iterate_search(args, data)
+        display_data(data)    
         util.pickle_data(data)
 
-    display_data(data)    
+
+    
 
 def get_journal_id(args):
     """ Returns the OpenAlex Work ID of the top result matching the input journal name
     :param args: parsed user argument object
     :returns str, int: ID of journal, count of Works in source
     """
+    FAIL = "", 0
+    
     url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
-    results = util.openalex_request(url)
-    if not results: return "", 0
+    results = util.api_request(url)
+    if not results: return FAIL
 
     if len(results['results']) > 0:
         top_result = results['results'][0]
@@ -92,7 +100,7 @@ def get_journal_id(args):
         return top_result['id'], top_result['works_count']
     else: 
         print("No results found.")
-        return "", 0
+        return FAIL
 
 def iterate_search(args, data):
     """
@@ -149,25 +157,26 @@ def display_data(data):
     if data.config.abstracts: 
         dict['abstract'] = data.abstracts
 
-    if data.config.gender:
-        genders = gender.predict_gender(data.authors)
-        data.genders = genders
-        dict['predicted gender'] = data.genders
+    if data.config.gender: 
+        if not data.config.restore_saved: # TODO: migrate this out of display_data bc it's calculation
+            data.gender_strings, data.gender_data = gender.predict_gender(data.authors, data.years)
+            dict['predicted gender'] = data.gender_strings
+        gender.plot_gender_by_year(data.gender_data)
 
     df = pd.DataFrame(dict)
     util.info(df.head())
 
     if data.config.csv: 
-        util.info("writing csv...")
+        util.info("Writing csv...")
         df.to_csv("../data/data.csv")
 
     if data.config.maps:
-        util.info("mapping points...")
+        util.info("Mapping points...")
         map_dict = {'latitude' : data.latitudes, 'longitude' : data.longitudes} 
         map_df = pd.DataFrame(map_dict)
         df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
         map_points(df, 'world')
-        util.info("maps created!")
+        util.info("Maps created!")
 
 if __name__ == "__main__":
     args = parseArguments()
