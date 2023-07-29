@@ -1,8 +1,11 @@
 import util
-
+from multiRequests import multithr_iterate
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+
+
+
 
 class GenderData():
     def __init__(self, gender_tuples, years):
@@ -62,31 +65,36 @@ def predict_gender(authors):
 
 def get_genders_dict(unique_names):
     """ Given a list of unique first names, returns a dict of names mapped to genders.
-        Uses Genderize batch requests, currently w/o multithreading.
+        Uses Genderize batch requests.
     """
     genders_dict = {}
-    batch_start, BATCH_SIZE = 0, 10
-    authors_remaining : int = len(unique_names)
-    while authors_remaining > 0:
-        batch_names = []
-        if authors_remaining > BATCH_SIZE:
-            batch_names = unique_names[batch_start : batch_start + BATCH_SIZE]
-        else: 
-            batch_names = unique_names[batch_start:]
-        batch_genders = genderize_request(batch_names)
-        batch_dict = {name : gender for name, gender in zip(batch_names, batch_genders)}
-        genders_dict.update(batch_dict)
-        batch_start += BATCH_SIZE
-        authors_remaining -= BATCH_SIZE
+    #batch_start, BATCH_SIZE = 0, 10
+    #authors_remaining : int = len(unique_names)
+    #while authors_remaining > 0:
+    #    batch_names = []
+    #    if authors_remaining > BATCH_SIZE:
+    #        batch_names = unique_names[batch_start : batch_start + BATCH_SIZE]
+    #    else: 
+    #        batch_names = unique_names[batch_start:]
+    #    batch_genders = genderize_request(batch_names)
+    #    batch_dict = {name : gender for name, gender in zip(batch_names, batch_genders)}
+    #    genders_dict.update(batch_dict)
+    #    batch_start += BATCH_SIZE
+    #    authors_remaining -= BATCH_SIZE
+    genders = multithr_iterate(unique_names, genderize_request, batch_size=10)
+    genders_dict = {name : gender for name, gender in zip(unique_names, genders)}
 
     return genders_dict
 
+    multithr_iterate_ids(ids, )
 
 def full2first_names(authors):
     """ Returns a list of first names found in the authors list and an inverted index indicating the name locations
-        :param authors: list[str] st each str is one or more semicolon-separated full names
-        :returns first_names: list[str] of unique first names (first approximated by first 'word' in each name)
-        :return inverted_index: dict[name : list[indices]] mapping occurrences of each first name in original list of names
+        Args:    
+            authors: list[str] st each str is a semicolon-separated list of one or more full names
+        Returns:
+            first_names: list[str] of unique first names (first approximated by first 'word' in each name)
+            inverted_index: dict[name : list[indices]] mapping occurrences of each first name in original list of names
     """
     separator = ';'
     first_names = []
