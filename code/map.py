@@ -1,12 +1,8 @@
-import pygmt
+import pygmt as pgm
 
 def map_points(df, name): 
-    """region = [
-        df.longitude.min() - 1,
-        df.longitude.max() + 1,
-        df.latitude.min() - 5,
-        df.latitude.max() + 10,
-        ]
+    """ Given a df with latitude, longitude, and counts, writes a map to file `name` 
+        displaying distribution of points
     """
     region = [
         -180,
@@ -14,14 +10,15 @@ def map_points(df, name):
         -60,
         80,
         ]
+        
     print(df.head())
 
-    fig = pygmt.Figure()
+    fig = pgm.Figure()
     fig.basemap(region=region, projection="M8i", frame=True)
     fig.coast(land="black", water="skyblue")
     fig.plot(x=df.longitude, y=df.latitude, style="c0.3c", fill="black", pen="black")
  
-    fig = pygmt.Figure()
+    fig = pgm.Figure()
     fig.basemap(region=region, projection="M8i", frame=True)
     #fig.coast(land="seagreen", water="white")
     fig.coast(land="lightblue", water="white")

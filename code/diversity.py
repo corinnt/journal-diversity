@@ -10,6 +10,7 @@ import parseDetails
 import util
 import gender
 
+from gender import GenderData
 from map import map_points
 
 class Data():
@@ -75,11 +76,9 @@ def main(args):
         display_data(data)    
     else:
         iterate_search(args, data)
+        #analyze_data(data)
         display_data(data)    
         util.pickle_data(data)
-
-
-    
 
 def get_journal_id(args):
     """ Returns the OpenAlex Work ID of the top result matching the input journal name
@@ -107,8 +106,10 @@ def iterate_search(args, data):
     :param source_id: string - OpenAlex ID of the source to analyze
     :param data: empty Data object
     """
-    # only get name and authors for after 1999
+    # only get these fields for items retrieved:
     fields = 'display_name,authorships,concepts,publication_year,abstract_inverted_index'
+
+    # filter items retrieved by year:
     search_filters = 'locations.source.id:' + data.id
     if args.start_year:
         search_filters += ',publication_year:>' + str(args.start_year - 1)
@@ -120,19 +121,18 @@ def iterate_search(args, data):
     has_more_pages = True
     fewer_than_10k_results = True
 
-    #for page in tqdm(range(int(data.num_works/25))):
     while has_more_pages and fewer_than_10k_results:
         # set page value and request page from OpenAlex
         url = works_query_with_page.format(page)
         page_with_results = requests.get(url).json()
-            
         # loop through page of results
         results = page_with_results['results']
         for work in results:
             title = work['display_name']
             if util.valid_title(title):
-                parseDetails.parse_work(work, data)
-            
+                authorship_list = parseDetails.parse_work(work, data)
+                parseDetails.parse_authorship(authorship_list, data)
+
         page += 1
         # end loop when either there are no more results on the requested page 
         # or the next request would exceed 10,000 results
@@ -159,9 +159,10 @@ def display_data(data):
 
     if data.config.gender: 
         if not data.config.restore_saved: # TODO: migrate this out of display_data bc it's calculation
-            data.gender_strings, data.gender_data = gender.predict_gender(data.authors, data.years)
+            ordered_gender_tuples = gender.predict_gender(data.authors)
+            gender_strings = util.reformat_as_strings(ordered_gender_tuples)
             dict['predicted gender'] = data.gender_strings
-        gender.plot_gender_by_year(data.gender_data)
+        #gender_data.plot_gender_by_year()
 
     df = pd.DataFrame(dict)
     util.info(df.head())
@@ -177,6 +178,7 @@ def display_data(data):
         df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
         map_points(df, 'world')
         util.info("Maps created!")
+
 
 if __name__ == "__main__":
     args = parseArguments()

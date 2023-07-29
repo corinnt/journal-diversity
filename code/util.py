@@ -81,12 +81,25 @@ def namelist2string(names):
     else: string = 'NA'
     return string
 
+def group_tuples(tuples):
+    # Create a dictionary to group genders by index
+    index_groups = {}
+    for item, index in tuples:
+        if index not in index_groups:
+            index_groups[index] = [item]
+        else:
+            index_groups[index].append(item)
+    # Convert the dictionary items to a list of tuples
+    grouped_tuples = [(items, index) for index, items in index_groups.items()]
+    return grouped_tuples
+
+
 def reformat_as_strings(ordered_tuples):
     """ Given a list of tuples pairing strings to indices,
     returns as a list of strings with strings of same index joined by namelist2string
     :param ordered_tuples: list[(str, int)]
     :returns strings: list[str]
-    """
+    
     if not ordered_tuples: return []
     strings = []
     ordered_tuples.sort(key = lambda pair : pair[1]) #already sorted?
@@ -103,6 +116,12 @@ def reformat_as_strings(ordered_tuples):
     final_string = namelist2string(mini_list) #sweep up the final string that just got added to mini_list
     strings.append(final_string)
     return strings
+    """
+    if not ordered_tuples: return []
+    grouped_tuples : list[tuple(list, int)] = grouped_tuples(ordered_tuples)
+    strings : list[str] = [namelist2string(names) for names, _ in grouped_tuples]
+    return strings
+
             
 def add_to_inverted_index(key, index, inverted_index):
     """ Given a key, index, and inverted_index, adds the key-index pair to the inverted index
