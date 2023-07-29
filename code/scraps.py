@@ -226,3 +226,19 @@ def alternate_geodata(id, data):
         util.info("Last known institution unavailable.")
         return False, 'NA'
 
+
+###########################################################################################
+
+    batch_start, BATCH_SIZE = 0, 10
+    authors_remaining : int = len(unique_names)
+    while authors_remaining > 0:
+        batch_names = []
+        if authors_remaining > BATCH_SIZE:
+            batch_names = unique_names[batch_start : batch_start + BATCH_SIZE]
+        else: 
+            batch_names = unique_names[batch_start:]
+        batch_genders = genderize_request(batch_names)
+        batch_dict = {name : gender for name, gender in zip(batch_names, batch_genders)}
+        genders_dict.update(batch_dict)
+        batch_start += BATCH_SIZE
+        authors_remaining -= BATCH_SIZE

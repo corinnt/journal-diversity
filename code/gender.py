@@ -4,9 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-
-
-
 class GenderData():
     def __init__(self, gender_tuples, years):
         """Given a list of tuples of (gender, index) and list of years,
@@ -41,12 +38,16 @@ class GenderData():
         plt.savefig("../data/gender-over-time.png")
         plt.show()
 
+############################################################################################
 
 def predict_gender(authors):
-    """ Given a list of authors, returns a list of their predicted genders (via Genderize API)
-        :param authors: list[str] of author full names
-        :returns gender_strings: list[str] of predicted genders
-        :returns genders_by_year: GenderData object to plot genders by year
+    """ Given a list of authors, returns a list of their predicted genders 
+        (via Genderize API)
+        Args:
+            authors: list[str] of author full names
+        Returns: 
+            gender_strings: list[()] of predicted genders
+            genders_by_year: GenderData object to plot genders by year
     """
     first_names, inverted_index = full2first_names(authors)
     unique_names : list = util.unique(first_names)
@@ -67,26 +68,9 @@ def get_genders_dict(unique_names):
     """ Given a list of unique first names, returns a dict of names mapped to genders.
         Uses Genderize batch requests.
     """
-    genders_dict = {}
-    #batch_start, BATCH_SIZE = 0, 10
-    #authors_remaining : int = len(unique_names)
-    #while authors_remaining > 0:
-    #    batch_names = []
-    #    if authors_remaining > BATCH_SIZE:
-    #        batch_names = unique_names[batch_start : batch_start + BATCH_SIZE]
-    #    else: 
-    #        batch_names = unique_names[batch_start:]
-    #    batch_genders = genderize_request(batch_names)
-    #    batch_dict = {name : gender for name, gender in zip(batch_names, batch_genders)}
-    #    genders_dict.update(batch_dict)
-    #    batch_start += BATCH_SIZE
-    #    authors_remaining -= BATCH_SIZE
     genders = multithr_iterate(unique_names, genderize_request, batch_size=10)
     genders_dict = {name : gender for name, gender in zip(unique_names, genders)}
-
     return genders_dict
-
-    multithr_iterate_ids(ids, )
 
 def full2first_names(authors):
     """ Returns a list of first names found in the authors list and an inverted index indicating the name locations
@@ -108,7 +92,9 @@ def full2first_names(authors):
             util.add_to_inverted_index(first_name, i, inverted_index)
     return first_names, inverted_index
 
-def genderize_request(name_list):
+def genderize_request(name_list, i):
+    """Given a batch of names and the index of the batch in the larger list,
+        returns the list of corresponding genders and the index"""
     url_base = 'https://api.genderize.io/?'
     query = "" 
     for name in name_list:
@@ -117,4 +103,4 @@ def genderize_request(name_list):
     predictions = util.api_request(url_base + query)
     if not predictions: return []
     genders = [pred['gender'] for pred in predictions]
-    return genders
+    return genders, i

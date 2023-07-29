@@ -23,7 +23,7 @@ def unique(duplicates):
     return uniques_list
 
 def api_request(url):
-    """
+    """ Given an API request url, returns results or handles errors
     """
     try:
         response = requests.get(url)
@@ -51,19 +51,18 @@ def valid_title(title):
             title != "Volume Information" and\
             "the following abbreviations are used in this issue" not in title.lower()
 
-def pickle_data(data):
-    """ Takes in populated Data object.
-        Writes pickled files to data/pickled_data. 
+def pickle_data(data, dst="../data/pickled_data"):
+    """ Given a data object, 
+        writes pickled files to `dst`. 
     """
-    destination = "../data/pickled_data"
-    pickled_data = open(destination, 'wb')
+    pickled_data = open(dst, 'wb')
     pickle.dump(data, pickled_data)
 
-def unpickle_data(path):
-    """ Takes in filepath to the pickled Data object from a previous run
-        Returns the unpickled Data object.
+def unpickle_data(src):
+    """ Given the filepath to a pickled object,
+        returns the unpickled Data object.
     """
-    pickled_data = open(path, 'rb')
+    pickled_data = open(src, 'rb')
     data = pickle.load(pickled_data)
     return data
 
@@ -93,7 +92,6 @@ def group_tuples(tuples):
     grouped_tuples = [(items, index) for index, items in index_groups.items()]
     return grouped_tuples
 
-
 def reformat_as_strings(ordered_tuples):
     """ Given a list of tuples pairing strings to indices,
     returns as a list of strings with strings of same index joined by namelist2string
@@ -118,7 +116,7 @@ def reformat_as_strings(ordered_tuples):
     return strings
     """
     if not ordered_tuples: return []
-    grouped_tuples : list[tuple(list, int)] = grouped_tuples(ordered_tuples)
+    grouped_tuples : list[tuple(list, int)] = group_tuples(ordered_tuples)
     strings : list[str] = [namelist2string(names) for names, _ in grouped_tuples]
     return strings
 

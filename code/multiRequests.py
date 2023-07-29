@@ -1,3 +1,5 @@
+from util import info
+
 import pandas as pd 
 from tqdm import tqdm
 import itertools
@@ -9,8 +11,8 @@ def multithr_iterate(all_IDs, batch_processing, batch_size=50, max_workers=15):
         :param all_IDs: list of all IDs
         :param batch_processing: function to apply to each batch
     """
-    print('Iterating through ids...')        
-
+    info('Iterating through ids...')        
+    if isinstance(all_IDs, zip): all_IDs = list(all_IDs)
     all_results = []
     id_batches = [all_IDs[i:i + batch_size] for i in range(0, len(all_IDs), batch_size)]
     #TOGGLE FOR TEST
@@ -22,8 +24,8 @@ def multithr_iterate(all_IDs, batch_processing, batch_size=50, max_workers=15):
             batch_futures = [executor.submit(batch_processing, id_batch, i) for i, id_batch in enumerate(pool)]
             wait(batch_futures)
             results = [task.result() for task in batch_futures]
-            results.sort(key=lambda x: x[1]) #thread safety
-            results = [result[0] for result in results]
+            results.sort(key=lambda x: x[-1]) #thread safety
+            results = [result[:-1] for result in results]
             
             final_pooled_results = list(itertools.chain.from_iterable(results))
             all_results = all_results + final_pooled_results
