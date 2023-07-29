@@ -2,6 +2,7 @@ import util
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 class GenderData():
     def __init__(self, gender_tuples, years):
@@ -44,12 +45,27 @@ def predict_gender(authors):
         :returns gender_strings: list[str] of predicted genders
         :returns genders_by_year: GenderData object to plot genders by year
     """
-    batch_start, BATCH_SIZE = 0, 10
-    genders_dict = {}
-
     first_names, inverted_index = full2first_names(authors)
     unique_names : list = util.unique(first_names)
 
+    path = "../data/pickled_genders"
+    if os.path.exists(path) and os.path.isfile(path):
+        genders_dict = util.unpickle_data(path)
+    else:
+        genders_dict = get_genders_dict(unique_names)
+        util.pickle_data(genders_dict, dst=path)
+
+    ordered_names = util.decode_inverted(inverted_index, return_tuples=True)
+    # convert ordered names to ordered corresponding genders
+    ordered_gender_tuples = [(genders_dict[name], i) for name, i in ordered_names]
+    return ordered_gender_tuples
+
+def get_genders_dict(unique_names):
+    """ Given a list of unique first names, returns a dict of names mapped to genders.
+        Uses Genderize batch requests, currently w/o multithreading.
+    """
+    genders_dict = {}
+    batch_start, BATCH_SIZE = 0, 10
     authors_remaining : int = len(unique_names)
     while authors_remaining > 0:
         batch_names = []
@@ -63,10 +79,8 @@ def predict_gender(authors):
         batch_start += BATCH_SIZE
         authors_remaining -= BATCH_SIZE
 
-    ordered_names = util.decode_inverted(inverted_index, return_tuples=True)
-    # convert ordered names to ordered corresponding genders
-    ordered_gender_tuples = [(genders_dict[name], i) for name, i in ordered_names]
-    return ordered_gender_tuples
+    return genders_dict
+
 
 def full2first_names(authors):
     """ Returns a list of first names found in the authors list and an inverted index indicating the name locations
