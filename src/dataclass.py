@@ -31,27 +31,13 @@ class Data():
         self.id = None
         self.num_works = 0
 
-    def set_journal(self, args):
-        """ Returns the OpenAlex Work ID of the top result matching the input journal name
-        :param args: parsed user argument object
-        :returns str, int: ID of journal, count of Works in source
-        """    
-        url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
-        results = util.api_request(url)
-        if not results: print("No results for journal.") # possbug - would hope that results would be None if len(results) == 0? 
-        top_result = results['results'][0]
-        if 'id' in top_result: 
-            util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
-            self.id = top_result['id']
-            self.num_works = top_result['works_count']
-        else: 
-            print("No results found for journal.")
-
     def iterate_search(self, args):
         """
+        :param data: Data object - precondition empty / freshly instantiated
         :param source_id: string - OpenAlex ID of the source to analyze
-        :param data: empty Data object
         """
+        # POSSBUG self is not empty
+
         # only get these fields for items retrieved:
         fields = 'display_name,authorships,concepts,publication_year,abstract_inverted_index'
 
@@ -96,8 +82,7 @@ class Data():
         return institution_id_batches, author_id_batches
     
     def add_work(self, work):
-        """ Given a Work object and Data object to fill,
-            adds title, year, and abstract to data, 
+        """ Given a Work object and Data object to fill, adds title, year, and abstract to self, 
             and returns list of Authorship objects
             :param work: single Work object from OpenAlex
         """
@@ -176,11 +161,14 @@ class Data():
             results 
             # TODO: documentation
         """
-        latitudes, longitudes = multithr_iterate(zip(institution_ids, author_ids), 
+        #latitudes, longitudes = multithr_iterate(zip(institution_ids, author_ids), 
+        values = multithr_iterate(list(zip(institution_ids, author_ids)), 
                                                 parse_work_geodata, 
-                                                batch_size=1, max_workers=10)
-        self.latitudes = latitudes
-        self.longitudes = longitudes
+                                                batch_size=1, max_workers=5)
+        print("VALUES: " + str(values))
+        lats, longs = values
+        self.latitudes = lats
+        self.longitudes = longs
 
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.
@@ -218,18 +206,23 @@ class Data():
             map_points(df, 'world')
             util.info("Maps created!")
 
-def parse_work_geodata(institution_author_batch, i):
+def parse_work_geodata(institutions_and_authors, i):
     """ 
     """
-    print("institution_author_batch: " + str(institution_author_batch[0]))
-    institution_batch, author_batch = institution_author_batch[0]
+    print("institution_author_batch: " + str(institutions_and_authors[0]))
+    institution_batch, author_batch = institutions_and_authors[0]
     latitude, longitude = np.nan, np.nan
     for institution in institution_batch:
         latitude, longitude = institution_id_geodata(institution)
-        if latitude != np.nan: return latitude, longitude, i
+        if latitude != np.nan: 
+            print ("institution geodata.\tlatitude: " + str(latitude) + "\tlongitude: " + str(longitude) + "\ti: " + str(i))
+            return latitude, longitude, i
     for author in author_batch:
         latitude, longitude = author_id_geodata(author)
-        if latitude != np.nan: return latitude, longitude, i
+        if latitude != np.nan: 
+            print ("alternate geodata.\tlatitude: " + str(latitude) + "\tlongitude: " + str(longitude) + "\ti: " + str(i))
+            return latitude, longitude, i
+    print ("no geodata.\tlatitude: " + str(latitude) + "\tlongitude: " + str(longitude) + "\ti: " + str(i))
     return latitude, longitude, i
         # none of the institutions or authors had geodata
         

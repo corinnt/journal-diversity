@@ -32,6 +32,24 @@ def parseArguments():
         util.VERBOSE = True
     return args
 
+def set_journal(args):
+        """ Returns the OpenAlex Work ID of the top result matching the input journal name
+        :param args: parsed user argument object
+        :returns str, int: ID of journal, count of Works in source
+        """    
+        url = "https://api.openalex.org/sources?search=" + args.journal_name + '&mailto=' + args.email
+        results = util.api_request(url)
+        if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
+        top_result = results['results'][0]
+        if 'id' in top_result: 
+            util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
+            id = top_result['id']
+            num_works = top_result['works_count']
+            return id, num_works
+        else: 
+            raise Exception("No results found for journal " + args.journal_name)
+
+
 def main(args):
     
     data = Data(args)

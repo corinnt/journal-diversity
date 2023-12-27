@@ -3,4 +3,4 @@
 *.shp
 *.csv
 */__pycache__/
-
+scraps.py
