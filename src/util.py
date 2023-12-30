@@ -22,8 +22,16 @@ def unique(duplicates):
     uniques_list = list(uniques)
     return uniques_list
 
+def foldl(base, fn, lst):
+    result = base.copy()
+    for item in lst:
+        result = fn(result, item)
+    return result
+
 def api_request(url):
     """ Given an API request url, returns results or handles errors
+        Args: 
+            url: str - API request url
     """
     try:
         response = requests.get(url)
@@ -39,9 +47,11 @@ def api_request(url):
 
 def valid_title(title):
     """ 
-        Given a title, returns true if the title is not one of the "issue components"
-            :param title: prospective title 
-            :returns bool: True if valid
+        Given a title, returns true if the title is not one of the "issue components". 
+        Args:
+            title: str - prospective title 
+        Returns:
+            bool - True if valid
     """
     return title and\
             title != "Front Matter" and \
@@ -71,8 +81,8 @@ def deNone(name):
     else: return name
 
 def namelist2string(names):
-    """ Converts a list of strings to a single string w/ items sepaarated by '; ' 
-        None values included as 'NA' to maintain length/indicate absence
+    """ Converts a list of strings to a single string w/ items separated by '; ' 
+        None values included as 'NA'. 
     """
     names = [deNone(name) for name in names]
     if len(names) > 0: 
@@ -81,8 +91,10 @@ def namelist2string(names):
     return string
 
 def group_tuples(tuples):
-    # Create a dictionary to group genders by index
-    index_groups = {}
+    """Given a list of tuples of (item, index),
+        Returns a condensed list of tuples of ([items], unique_index)"""
+    # Create a dictionary to mapping indices to a list of genders
+    index_groups = {} 
     for item, index in tuples:
         if index not in index_groups:
             index_groups[index] = [item]
@@ -95,27 +107,12 @@ def group_tuples(tuples):
 def reformat_as_strings(ordered_tuples):
     """ Given a list of tuples pairing strings to indices,
     returns as a list of strings with strings of same index joined by namelist2string
-    :param ordered_tuples: list[(str, int)]
-    :returns strings: list[str]
-    
-    if not ordered_tuples: return []
-    strings = []
-    ordered_tuples.sort(key = lambda pair : pair[1]) #already sorted?
-    prev_index, mini_list = 0, []
-    for item, index in ordered_tuples:
-        if prev_index is not index:
-            single_string = namelist2string(mini_list) #convert accrued list of names to string
-            strings.append(single_string)
-            prev_index = index
-            mini_list = [item]
-        else:
-            mini_list.append(item)
-            prev_index = index
-    final_string = namelist2string(mini_list) #sweep up the final string that just got added to mini_list
-    strings.append(final_string)
-    return strings
+    Args:
+        ordered_tuples: list[(str, int)]
+    Returns:
+        strings: list[str] 
     """
-    if not ordered_tuples: return []
+    if not ordered_tuples: return [] #TODO need to handle this explicitly?
     grouped_tuples : list[tuple(list, int)] = group_tuples(ordered_tuples)
     strings : list[str] = [namelist2string(names) for names, _ in grouped_tuples]
     return strings
@@ -135,9 +132,11 @@ def add_to_inverted_index(key, index, inverted_index):
 
 def decode_inverted(inverted_index, return_tuples=False):
     """ Converts an inverted index to list of words in the correct order
-            :param inverted_index: dict of word : [indices] representing an abstract
-            :param return_tuples: default False, when True, returns list of tuples not list of strings
-            :returns list: default list of ordered words, ^ may be list of (str, int) tuples sorted by int
+            Args:
+                inverted_index: dict of word : [indices] representing an abstract
+                return_tuples: default False, when True, returns list of tuples not list of strings
+            Returns:
+                list[str] - list of words ordered by index, or list[(str, int)] sorted by index
     """
     if not inverted_index: return 'NA'
 

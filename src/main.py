@@ -2,6 +2,7 @@ import sys
 import argparse
 import util
 from dataclass import Data
+from gender import predict_gender
 
 def parseArguments():
     parser = argparse.ArgumentParser()
@@ -32,7 +33,7 @@ def parseArguments():
         util.VERBOSE = True
     return args
 
-def set_journal(args):
+def get_journal(args):
         """ Returns the OpenAlex Work ID of the top result matching the input journal name
         :param args: parsed user argument object
         :returns str, int: ID of journal, count of Works in source
@@ -44,33 +45,35 @@ def set_journal(args):
         if 'id' in top_result: 
             util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
             id = top_result['id']
-            num_works = top_result['works_count']
-            return id, num_works
+            #num_works = top_result['works_count']
+            return id#, num_works
         else: 
-            raise Exception("No results found for journal " + args.journal_name)
-
+            raise Exception("No results found for journal " + args.journal_name + " in OpenAlex database.")
 
 def main(args):
-    
     data = Data(args)
-
     if args.journal_name:
-        data.set_journal(args.journal_name)
+        source_id = get_journal(args.journal_name)
     else:
-        data.id = 'S21591069' # Default Gesta
-        data.num_works = 1091
-
+        source_id = 'S21591069' # Default Gesta
+        #data.num_works = 1091
+   
     if args.restore_saved:
+        util.info("Restoring saved data from ../data/pickled_data.csv")
         data = util.unpickle_data('../data/pickled_data')
-        data.display_data()    
+        if data.source_id != source_id:
+            raise Exception("Searched source ID does not match saved source ID.")
     else:
+        data.source_id = source_id
         institution_ids, author_ids = data.iterate_search(args)
-        data.add_all_geodata(institution_ids, author_ids)
-        #analyze_data(data)
-        data.display_data()    
-        util.pickle_data(data)
+        print('THROUGH ITERATE SEARCH')
+        data.add_geodata(institution_ids, author_ids) 
+        data.add_genders()
 
+    data.display_data()    
+    util.pickle_data(data)
 
 if __name__ == "__main__":
     args = parseArguments()
     main(args)
+
