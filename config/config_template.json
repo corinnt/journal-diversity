@@ -1,0 +1,16 @@
+{   
+    "email": "your_email@gmail.com", 
+    "namsor_key": "your-api-key",
+    "genders": {
+        "src": "/path/to/input/data",
+        "dst": "/path/to/store/data"
+    },
+    "journal_data": {
+        "src": "/path/to/input/data", 
+        "dst":  "/path/to/store/data"
+    }, 
+    "output": {
+        "csv": "/path/to/store/data.csv", 
+        "map": "/path/to/store/map.png"
+    }
+}
