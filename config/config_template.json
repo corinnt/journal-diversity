@@ -11,6 +11,7 @@
     }, 
     "output": {
         "csv": "/path/to/store/data.csv", 
-        "map": "/path/to/store/map.png"
+        "map": "/path/to/store/map.png", 
+        "gender-plot": "/path/to/store/gender-over-time.png"
     }
 }
