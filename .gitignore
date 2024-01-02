@@ -5,3 +5,4 @@
 */__pycache__/
 scraps.py
 /data
+config/config.json
