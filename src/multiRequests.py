@@ -8,8 +8,11 @@ from concurrent.futures import ThreadPoolExecutor, wait
 def multithr_iterate(all_IDs, batch_processing, batch_size=50, max_workers=15):
     """ Given a list of inputs to iterate through and function to handle a batch of them,
         returns a list of the results.
-        :param all_IDs: list of all IDs (can be a list of tuples as well)
-        :param batch_processing: function to apply to each batch
+        Args:
+            all_IDs: list of all IDs (can be a list of tuples as well)
+            batch_processing: function to apply to each batch
+            batch_size: int (default 50) for number of IDs given to each thread
+            max_workers: int (default 15) for number of threads/workers
     """
     all_results = []
     id_batches = [all_IDs[i:i + batch_size] for i in range(0, len(all_IDs), batch_size)]
