@@ -1,14 +1,25 @@
 class Config():
     def __init__(self, config_json):
-        self.email = config_json['email']
-        self.gender_apikey = config_json['namsor_key']
+        def try_json(keys):
+            try:
+                result = config_json
+                for key in keys:   
+                    result = result[key]
+                return result
+            except KeyError as err:
+                print("Check config file: " + err)
 
-        self.gender_src = config_json['genders']['src']
-        self.gender_dst = config_json['genders']['dst']
+        self.email = try_json(['email'])
+        self.gender_apikey = try_json(['namsor_key'])
 
-        self.data_src = config_json['journal_data']['src']
-        self.data_dst = config_json['journal_data']['dst']
+        self.gender_src = try_json(['genders'], ['src'])
+        self.gender_dst = try_json(['genders'], ['dst'])
 
-        self.csv = config_json['output']['csv']
-        self.map = config_json['output']['map']
-        self.gender_plot = config_json['output']['gender-plot']
+        self.data_src = try_json(['journal_data'], ['src'])
+        self.data_dst = try_json(['journal_data'], ['dst'])
+
+        self.csv = try_json(['output'], ['csv'])
+        self.map = try_json(['output'], ['map'])
+        self.gender_plot = try_json(['output'], ['gender-plot'])
+
+
