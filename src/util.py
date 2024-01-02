@@ -1,6 +1,7 @@
 from operator import invert
 import pickle
 import requests
+import json
 
 VERBOSE = False
 def info(text):
@@ -28,8 +29,15 @@ def foldl(base, fn, lst):
         result = fn(result, item)
     return result
 
-def api_request(url):
-    """ Given an API request url, returns results or handles errors
+def load_config(file_path):
+    """ Given a path to a config file, returns as JSON object. 
+    """
+    with open(file_path, "r") as f:
+        config = json.load(f)
+    return config
+
+def api_get(url):
+    """ Given a GET url, returns results or handles errors
         Args: 
             url: str - API request url
     """
@@ -44,6 +52,25 @@ def api_request(url):
         print("Error decoding JSON:", e)
         return None
     return results
+
+def api_post(url, payload, headers):
+    """ Given a POST request, returns results or handles errors
+        Args: 
+            url: str - API Request url
+            payload: json - payload to send in the body of the Request
+            headers: Dictionary of HTTP Headers to send with the Request
+    """
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
+        results = response.json()
+    except requests.exceptions.RequestException as e:
+        print("Error occurred:", e)
+        return 
+    except ValueError as e:
+        print("Error decoding JSON:", e)
+        return 
+    return results 
 
 def valid_title(title):
     """ 
@@ -92,7 +119,7 @@ def namelist2string(names):
 
 def group_tuples(tuples):
     """Given a list of tuples of (item, index),
-        Returns a condensed list of tuples of ([items], unique_index)"""
+        Returns a condensed + sorted list of tuples of ([items], unique_index)"""
     # Create a dictionary to mapping indices to a list of genders
     index_groups = {} 
     for item, index in tuples:
@@ -102,6 +129,8 @@ def group_tuples(tuples):
             index_groups[index].append(item)
     # Convert the dictionary items to a list of tuples
     grouped_tuples = [(items, index) for index, items in index_groups.items()]
+    grouped_tuples.sort(key = lambda pair : pair[1]) #already sorted?
+    #TODO just return the values at this point. 
     return grouped_tuples
 
 def reformat_as_strings(ordered_tuples):
@@ -112,7 +141,7 @@ def reformat_as_strings(ordered_tuples):
     Returns:
         strings: list[str] 
     """
-    if not ordered_tuples: return [] #TODO need to handle this explicitly?
+    #if not ordered_tuples: return [] #TODO need to handle this explicitly?
     grouped_tuples : list[tuple(list, int)] = group_tuples(ordered_tuples)
     strings : list[str] = [namelist2string(names) for names, _ in grouped_tuples]
     return strings

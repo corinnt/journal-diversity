@@ -5,37 +5,53 @@ import numpy as np
 from tqdm import tqdm
 
 import util
-
-
-from gender import GenderData, predict_gender
+from configclass import Config
 from geodata import parse_work_geodata
-
 from map import map_points
 from multiRequests import multithr_iterate
 
+def get_journal(journal_name, email):
+        """ Returns the OpenAlex Work ID of the top result matching the input journal name
+
+            Args:
+                journal_name: str name of journal for which to search 
+            Returns:
+                str - OpenAlex ID of top match for journal in database
+        """    
+        url = "https://api.openalex.org/sources?search=" + journal_name + '&mailto=' + email
+        results = util.api_request(url)
+        if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
+        top_result = results['results'][0]
+        if 'id' in top_result: 
+            util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
+            id = top_result['id']
+            return id
+        else: 
+            raise Exception("No results found for journal " + journal_name + " in OpenAlex database.")
 
 class Data():
-    def __init__(self, args):
+    def __init__(self, args, config_json):
+        self.analysis = args
+        self.config = Config(config_json)
+
+        if args.journal_name: 
+            self.source_id = get_journal(args.journal_name, self.config.email)
+        else: 
+            self.source_id = 'S21591069' # Default Gesta
+
         self.titles = []
         self.authors = []
         self.abstracts = []
         self.years = []
         self.institution_names = []
 
-        self.gender_strings = []
-        self.author_ids = []
-        #self.gender = None
-
         self.latitudes = []
-        self.longitudes = []
+        self.longitudes = [] 
 
-        self.config = args
-        self.source_id = None
-        #self.num_works = 0
-
-    def iterate_search(self, args):
+    def iterate_search(self):
         """ 
-        Given 
+        Pages over Works for journal, populating titles, authors, publication years, and abstracts
+
         Args:
             data: Data object - precondition empty / freshly instantiated
             source_id: string - OpenAlex ID of the source to analyze
@@ -43,18 +59,16 @@ class Data():
 
         """
         # POSSBUG self is not empty
-
         # only get these fields for items retrieved:
         fields = 'display_name,authorships,concepts,publication_year,abstract_inverted_index'
-
         # filter items retrieved by year:
         search_filters = 'locations.source.id:' + self.source_id
-        if args.start_year:
-            search_filters += ',publication_year:>' + str(args.start_year - 1)
-        if args.end_year: 
-            search_filters += ',publication_year:<' + str(args.end_year + 1)
+        if self.analysis.start_year:
+            search_filters += ',publication_year:>' + str(self.analysis.start_year - 1)
+        if self.analysis.end_year: 
+            search_filters += ',publication_year:<' + str(self.analysis.end_year + 1)
 
-        works_query_with_page = 'https://api.openalex.org/works?select=' + fields + '&filter=' + search_filters + '&page={}&mailto=' + args.email
+        works_query_with_page = 'https://api.openalex.org/works?select=' + fields + '&filter=' + search_filters + '&page={}&mailto=' + self.config.email
         page = 1
         has_more_pages = True
         fewer_than_10k_results = True
@@ -62,13 +76,13 @@ class Data():
         while has_more_pages and fewer_than_10k_results:
             # set page value and request page from OpenAlex
             url = works_query_with_page.format(page)
-            page_with_results = requests.get(url).json()
+            page_with_results = util.api_get(url)#.json()
             # loop through page of results
             results = page_with_results['results']
             for work in results:
                 title = work['display_name']
                 if util.valid_title(title):
-                    authorship_list = self.add_work(work)
+                    authorship_list = self.add_work_basics(work)
                     institution_ids, author_ids = self.add_authorship(authorship_list)
                     institution_id_batches.append(institution_ids)
                     author_id_batches.append(author_ids)
@@ -79,18 +93,25 @@ class Data():
             has_more_pages = len(results) == page_size
             fewer_than_10k_results = page_size * page <= 10000
             
-            #NOTE: TOGGLE FOR TEST
-            if page == 5:
-                has_more_pages = False
             if page % 5 == 0:
                 util.info("iterating through pages: on page " + str(page))
         
         return institution_id_batches, author_id_batches
     
-    def add_work(self, work):
+    def populate_additional_data(self, institution_ids, author_ids):
+        """ Given list of institution IDs and list of author IDs, populates the Data object
+            with geodata if indicated by commandline arguments. 
+        """
+        if self.analysis.maps:
+            self.add_geodata(institution_ids, author_ids) 
+     
+    def add_work_basics(self, work):
         """ Given a Work object and Data object to fill, adds title, year, and abstract to self, 
             and returns list of Authorship objects
-            :param work: single Work object from OpenAlex
+            Args:
+                work: single OpenAlex Work object
+            Returns:
+                authorship_list : list of the work's associated Authorship objects
         """
         title = work['display_name']
         if not title: title = 'NA'
@@ -100,7 +121,7 @@ class Data():
         if not year: year = 'NA'
         self.years.append(year)
 
-        if self.config.abstracts:
+        if self.analysis.abstracts:
             inverted_index = work['abstract_inverted_index']
             words = util.decode_inverted(inverted_index)
             text = ' '.join(words)
@@ -122,7 +143,7 @@ class Data():
             self.institution_names.append('NA')
             return [], []
         author_names, institution_names, institution_ids, author_ids = [], [], [], []
-        for i, authorship in enumerate(authorships):
+        for authorship in authorships:
             author_names.append(authorship['author']['display_name'])
             author_ids.append(authorship['author']['id'])
             for institution in authorship['institutions']:
@@ -145,43 +166,34 @@ class Data():
         lats, longs = multithr_iterate(list(zip(institution_ids, author_ids)), 
                                                 parse_work_geodata, 
                                                 batch_size=1, max_workers=2) #OpenAlex rate limiter can't handle workers > 2
-        #print("VALUES: " + str(values))
-        #lats, longs = values
         self.latitudes = lats
         self.longitudes = longs
 
-    def add_genders(self):
-        self.gender_strings = predict_gender(self.authors)
-
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.
-            Currently also does gender prediction calls # TODO fix gender portion
         """
         dict = {'author' : self.authors, 
                 'title' : self.titles, 
                 'year' : self.years,
-                'institution' : self.institution_names, 
-                'latitude' : self.latitudes, 
-                'longitude' : self.longitudes}
-            
-        if self.config.abstracts: 
+                'institution' : self.institution_names}
+        
+        if self.analysis.abstracts: 
             dict['abstract'] = self.abstracts
-
-        if self.config.gender: 
-            dict['predicted gender'] = self.gender_strings #TODO
-            #gender_data.plot_gender_by_year() # TODO: fix gender plots
+        
+        if self.analysis.maps:
+            dict['latitude'] = self.latitudes, 
+            dict['longitude'] = self.longitudes
 
         df = pd.DataFrame(dict)
         util.info(df.head())
 
-        if self.config.csv: 
-            util.info("Writing csv...")
-            df.to_csv("../data/data.csv")
+        util.info("Writing csv...")
+        df.to_csv(self.config.csv)
 
-        if self.config.maps:
+        if self.analysis.maps:
             util.info("Mapping points...")
             map_dict = {'latitude' : self.latitudes, 'longitude' : self.longitudes} 
             map_df = pd.DataFrame(map_dict)
             df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
-            map_points(df, 'world')
-            util.info("Maps created!")
+            map_points(df, self.config.map)
+            util.info("Map " + self.config.map + " created!")
