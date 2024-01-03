@@ -1,6 +1,6 @@
-# Work in progress: Diversity in Academic Publications
+# Diversity in Academic Publications
 
-Generate visualizations of trends in gender and region of origin of scholars published in a given academic journal.
+Generate visualizations of trends in gender and region of origin of scholars published in a given academic journal, as well as aggregate data for further analysis.
 
 Note: Script can be used to analyze any journal found in the OpenAlex database; Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default. 
 
