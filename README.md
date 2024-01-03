@@ -2,14 +2,20 @@
 
 Generate visualizations of trends in gender and region of origin of scholars published in a given academic journal, as well as aggregate data for further analysis.
 
-Note: Script can be used to analyze any journal found in the OpenAlex database; Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default. 
+Note: Tool can be used to analyze any journal in the OpenAlex database; Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default. 
 
-*example to generate maps of publications in Gesta between in 2010 and 2020*
+*example: generate maps of publications in Gesta between 2010 and 2020*
     
-    python main.py -v -m --start_year 2010 --end_year 2020
+    python main.py --verbose -m --start_year 2010 --end_year 2020
 
-#### Snippet of resulting map:
 ![alt text](README_imgs/gesta-map.png?raw=true) 
+
+
+*example: generate plots of gender of authors in USENIX (random sample of 500 papers)*
+
+    python main.py -n usenix -s 500 --verbose -g 
+
+![alt text](README_imgs/gender-over-time.png?raw=true)
 
 ## Use Instructions
 
@@ -57,9 +63,7 @@ Build the conda environment to access the necessary packages:
   `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
                             name of journal or source to search for
 
-## Graph of gender over time in Gesta publications from 2000-2020:
 
-![alt text](README_imgs/gender-over-time.png?raw=true)
 
 ## Sources:
 
