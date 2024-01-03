@@ -195,5 +195,5 @@ class Data():
             map_dict = {'latitude' : self.latitudes, 'longitude' : self.longitudes} 
             map_df = pd.DataFrame(map_dict)
             df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
-            map_points(df, self.config)
+            map_points(df, self.config.map)
             util.info("Map created at " + self.config.map + ".")
