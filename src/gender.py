@@ -102,7 +102,7 @@ class GenderData(Data):
 
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.
-            Currently also does gender prediction calls # TODO fix gender portion
+            Currently also does gender prediction calls 
         """
         dict = {'author' : self.authors, 
                 'title' : self.titles, 
@@ -121,7 +121,7 @@ class GenderData(Data):
         util.info("Writing csv...")
         df.to_csv(self.config.csv)
 
-        self.plot_gender_by_year() # TODO: fix gender plots
+        self.plot_gender_by_year()
 
         if self.analysis.maps:
             util.info("Mapping points...")
@@ -131,20 +131,19 @@ class GenderData(Data):
             map_points(df, self.config.map)
             util.info("Map " + self.config.map + " created!")
 
-    def plot_gender_by_year(self):
-        """ NOTE Currently not functional
-            TODO documentation
+    def plot_gender_by_year(self, bucket_size=5):
+        """ Given GenderData object, generates line plot of genders of authors over time.
                 
         """
         gender_dict, year_buckets = {}, [] #genders maps (gender, year) pairs to counts of occurrences
         for gender_lst, year in zip(self.genders, self.years):
-            bucket = (int(year) // 5) * 5
+            bucket = (int(year) // bucket_size) * bucket_size
             year_buckets.append(bucket)
             for gender in gender_lst:
                 util.increment((gender, bucket), gender_dict)
 
         dict = {'year': sorted(list(set(year_buckets))), 
-                'male': [], #counts
+                'male': [], 
                 'female': []}
 
         for gender in ['male', 'female']:
@@ -152,10 +151,9 @@ class GenderData(Data):
                 if (gender, year) in gender_dict:
                     dict[gender].append(gender_dict[(gender, year)])
                 else:
-                    dict[gender].append(0)            
-        df = pd.DataFrame(dict)
+                    dict[gender].append(0)     
 
-        df['year'] = pd.to_datetime(df['year'], format='%Y')
+        df = pd.DataFrame(dict)
         df.sort_values(by='year', ascending=True)
 
         plt.plot(df['year'], df['female'], marker='o', label='Female', color='red')
@@ -164,10 +162,10 @@ class GenderData(Data):
         plt.xlabel('Year')
         plt.ylabel('Number Authors')
         plt.title('Number of Male and Female Authors over Time')
+        plt.xticks(df['year'])
         plt.legend()
         plt.grid(True)
         plt.savefig(self.config.gender_plot)
-        plt.show()
 
 def full2first_names(authors):
     """ 
