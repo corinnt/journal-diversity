@@ -66,10 +66,12 @@ class Data():
         if self.analysis.end_year: 
             search_filters += ',publication_year:<' + str(self.analysis.end_year + 1)
        
-        sample_size = str(self.analysis.sample_size) 
-        seed = str(42)
-
-        sampling = 'sample='+ sample_size + '&seed='+ seed
+        if self.analysis.sample_size:
+            sample_size = str(self.analysis.sample_size) 
+            seed = str(42)
+            sampling = 'sample='+ sample_size + '&seed='+ seed
+        else:
+            sampling = ''
         field_selection = 'select=' + fields
         filtering = 'filter=' + search_filters
 
