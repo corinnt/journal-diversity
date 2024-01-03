@@ -1,49 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
-import pprint
-from map import map_points
 
 import util
 from dataclass import Data
-from multiRequests import multithr_iterate
-
-"""
-class GenderData():
-    def __init__(self, gender_tuples, years):
-        Given a list of tuples of (gender, index) and list of years,
-            populates a GenderData object with [[gender, gender], [gender], ...] and years
-        gender_tuples.sort(key = lambda pair : pair[1]) #already sorted?
-        grouped_gender_tuples = util.group_tuples(gender_tuples)
-        self.genders : list[list] = [genders for genders, _ in grouped_gender_tuples]
-        self.years : list[int] = years
-        assert len(self.genders) == len(self.years)
-
-    def plot_gender_by_year(self):
-         NOTE Currently not functional
-            :param gender_data: GenderData object with dataframe of years and author genders
-        
-    # TODO: test/fix gender plotting
-        dict = {'year' : self.years, 
-                'gender' : self.genders}
-        df = pd.DataFrame(dict)
-        df['year'] = pd.to_datetime(df['year'], format='%Y')
-        #df_grouped = df.groupby('year')['gender'].value_counts().unstack()
-        #df_resampled = df.resample('5Y', on='year').count()
-
-        # Resample the data using a 5-year frequency and separate by gender
-        df_resampled = df.groupby('gender').resample('5Y', on='year').value_count().unstack()
-        df_resampled.plot(kind='line', marker='o', figsize=(10, 6), color=['red', 'blue'])
-        #df_grouped.plot(kind='line', marker='o', figsize=(10, 6), color=['red', 'blue'])
-        plt.xlabel('Year')
-        plt.ylabel('Number Authors')
-        plt.title('Number of Male and Female Authors over Time')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig("../data/gender-over-time.png")
-        plt.show()
-"""
-############################################################################################
+from geodata import map_points
+from multiRequests import multithr_iterate, api_post
 
 class GenderData(Data):
     def __init__(self, args, config_json):
@@ -62,7 +24,8 @@ class GenderData(Data):
                 restore_saved: read from existing file rather than Namsor requests
             Returns: 
                 
-        """        
+        """  
+        util.info("Predicting genders...")      
         first_names, inverted_index = full2first_names(self.authors)
         unique_names = util.unique(first_names)
         genders_dict = {}
@@ -112,7 +75,7 @@ class GenderData(Data):
         if self.analysis.abstracts: 
             dict['abstract'] = self.abstracts
         if self.analysis.maps:
-            dict['latitude'] = self.latitudes, 
+            dict['latitude'] = self.latitudes
             dict['longitude'] = self.longitudes
 
         df = pd.DataFrame(dict)
@@ -170,6 +133,7 @@ class GenderData(Data):
 def full2first_names(authors):
     """ 
     Returns a list of first names found in the authors list and an inverted index indicating the name locations.
+
         Args:    
             authors: list[str] st each str is a semicolon-separated list of one or more full names
         Returns:
@@ -191,9 +155,14 @@ def full2first_names(authors):
 
 def namsor_request(apikey_and_names, i):
     """ 
-    Given a batch list of first names and the index of the batch in the larger list,
-    returns the list of corresponding genders and the batch index
-    TODO: docs 
+    Given a batch list of first names, returns the list of corresponding genders and the batch index. 
+    (Via Namsor genderguesser API.)
+        Args: 
+            apikey_and_names: tuple(str, [str]) apikey for Namsor pulled from config file 
+                                                and list of first names for which to predict genders
+            i: int index of batch in larger list
+        Returns: 
+            list of predicted genders and batch index
     """
     #print(apikey_and_names)
     apikey, name_list = apikey_and_names
@@ -206,7 +175,7 @@ def namsor_request(apikey_and_names, i):
         "Content-Type": "application/json"
     }
 
-    response = util.api_post(url, payload=payload, headers=headers)
+    response = api_post(url, payload=payload, headers=headers)
     if not response: return [] # error occurred decoding Response
     genders = [(prediction['likelyGender']) for prediction in response['personalNames']]
     return genders, i
