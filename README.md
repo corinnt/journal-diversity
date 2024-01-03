@@ -1,8 +1,8 @@
 # Diversity in Academic Publications
 
-Generate visualizations of trends in gender and region of origin of scholars published in a given academic journal, as well as aggregate data for further analysis.
+Generate visualizations of trends in gender and region of origin of scholars published in a given academic journal, as well as summary statistics and a CSV of data for further analysis.
 
-Note: Tool can be used to analyze any journal in the OpenAlex database; Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default. 
+This tool can be used to analyze any journal in the OpenAlex database. [OpenAlex](https://help.openalex.org/) is a free and open catalog of the global research system. Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default journal to analyze. 
 
 *example: generate maps of institutional affiliations of authors (Gesta, 2010-2020)*
     
