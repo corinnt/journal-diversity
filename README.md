@@ -4,9 +4,12 @@ Generate visualizations of trends in gender and region of origin of scholars pub
 
 Note: Script can be used to analyze any journal found in the OpenAlex database; Gesta, a leading peer-reviewed academic journal in the area of medieval art, is set as the default. 
 
-*example to generate maps of publications in Gesta starting in 1999:*
+*example to generate maps of publications in Gesta between in 2010 and 2020*
     
-    python main.py -v -m --start_year 1999
+    python main.py -v -m --start_year 2010 --end_year 2020
+
+#### Snippet of resulting map:
+![alt text](README_imgs/gesta-map.png?raw=true) 
 
 ## Use Instructions
 
@@ -14,7 +17,7 @@ Note: Script can be used to analyze any journal found in the OpenAlex database; 
 ### 0. For first time set-up:
 Set up your `config` file with an email to use as the reply-to for API calls, as well as filepaths to route data to. In order to use the gender analysis features, you will need to make an account with [Namsor](https://namsor.app/) to get an API key.
 
-    Build the conda environment to access the necessary packages:
+Build the conda environment to access the necessary packages:
 <!--- Make code --->
      conda env create -f journal-diversity.yml
 
@@ -51,10 +54,6 @@ Set up your `config` file with an email to use as the reply-to for API calls, as
 
   `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
                             name of journal or source to search for
-
-## Snippet of map of Gesta publications from 2010-2020:
-
-![alt text](README_imgs/gesta-map.png?raw=true)
 
 ## Graph of gender over time in Gesta publications from 2000-2020:
 
