@@ -15,6 +15,15 @@ class GenderData(Data):
         self.gender_strings = []
         self.genders = []
 
+    def populate_additional_data(self, institution_ids, author_ids):
+        """ Given list of institution IDs and list of author IDs, populates the GenderData object
+            with gender data, as well as geodata if indicated by commandline arguments. 
+        """
+        self.predict_genders()
+
+        if self.analysis.maps:
+            self.add_geodata(institution_ids, author_ids) 
+
     def predict_genders(self, restore_saved=False):
         """ Given a data object, populates self.gender_strings with predicted genders. 
             (via Namsor API)
@@ -53,19 +62,9 @@ class GenderData(Data):
         genders = multithr_iterate(key_and_names, namsor_request, batch_size=10, max_workers=10)
         genders_dict = {name : gender for name, gender in zip(unique_names, genders[0][0])}
         return genders_dict
-    
-    def populate_additional_data(self, institution_ids, author_ids):
-        """ Given list of institution IDs and list of author IDs, populates the GenderData object
-            with gender data, as well as geodata if indicated by commandline arguments. 
-        """
-        self.predict_genders()
-
-        if self.analysis.maps:
-            self.add_geodata(institution_ids, author_ids) 
 
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.
-            Currently also does gender prediction calls 
         """
         dict = {'author' : self.authors, 
                 'title' : self.titles, 
@@ -96,7 +95,6 @@ class GenderData(Data):
 
     def plot_gender_by_year(self, bucket_size=5):
         """ Given GenderData object, generates line plot of genders of authors over time.
-                
         """
         gender_dict, year_buckets = {}, [] #genders maps (gender, year) pairs to counts of occurrences
         for gender_lst, year in zip(self.genders, self.years):
@@ -132,7 +130,8 @@ class GenderData(Data):
 
 def full2first_names(authors):
     """ 
-    Returns a list of first names found in the authors list and an inverted index indicating the name locations.
+    Given a list of groups of authors, 
+    returns a list of first names found in the authors list and an inverted index indicating the name locations.
 
         Args:    
             authors: list[str] st each str is a semicolon-separated list of one or more full names
@@ -179,4 +178,3 @@ def namsor_request(apikey_and_names, i):
     if not response: return [] # error occurred decoding Response
     genders = [(prediction['likelyGender']) for prediction in response['personalNames']]
     return genders, i
-
