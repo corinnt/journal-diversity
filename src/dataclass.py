@@ -17,7 +17,7 @@ def get_journal(journal_name, email):
                 str - OpenAlex ID of top match for journal in database
         """    
         url = "https://api.openalex.org/sources?search=" + journal_name + '&mailto=' + email
-        results = api_request(url)
+        results = api_get(url)
         if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
         top_result = results['results'][0]
         if 'id' in top_result: 
@@ -48,13 +48,14 @@ class Data():
 
     def iterate_search(self):
         """ 
-        Pages over Works for journal, populating titles, authors, publication years, and abstracts
+        Pages over Works for journal, populating titles, authors, publication years, and abstracts. 
 
         Args:
             data: Data object - precondition empty / freshly instantiated
             source_id: string - OpenAlex ID of the source to analyze
         Returns:
-
+            (list[list[institution IDs]], list[list[author IDs]]) -
+            for each work in journal, lists of affiliated institution and author IDs
         """
         # POSSBUG self is not empty
         # only get these fields for items retrieved:

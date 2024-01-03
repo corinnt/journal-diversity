@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import util
@@ -43,7 +44,7 @@ def main(args):
     else: 
         data = Data(args, config_json)
 
-    if args.restore_saved:
+    if args.restore_saved and os.path.exists(data.config.data_src):
         util.info("Restoring saved data.")
         cached_data = util.unpickle_data(data.config.data_src)
         if cached_data.source_id != data.source_id:
