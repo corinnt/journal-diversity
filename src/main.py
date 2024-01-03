@@ -34,7 +34,6 @@ def parseArguments():
     args = parser.parse_args()
     if args.verbose: 
         util.VERBOSE = True
-
     return args
 
 def main(args):
@@ -44,8 +43,6 @@ def main(args):
     else: 
         data = Data(args, config_json)
 
-    print("args.restore_saved: " + str(args.restore_saved))
-
     if args.restore_saved:
         util.info("Restoring saved data.")
         cached_data = util.unpickle_data(data.config.data_src)
@@ -53,11 +50,12 @@ def main(args):
             raise Exception("Searched source ID does not match saved source ID. Check config file to confirm journal_data_src.")
         cached_data.display_data()
         return 
-    
+    util.info("Iterating through journal works...")
     institution_ids, author_ids = data.iterate_search()
     data.populate_additional_data(institution_ids, author_ids)
     data.display_data()
     util.pickle_data(data, dst=data.config.data_dst)
+    util.info("Saved pickled data to " + data.config.data_dst + ".") 
 
 if __name__ == "__main__":
     args = parseArguments()
