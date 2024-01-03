@@ -21,7 +21,7 @@ def get_journal(journal_name, email):
         if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
         top_result = results['results'][0]
         if 'id' in top_result: 
-            util.info("got id of " + top_result['display_name']) # POSSBUG: multiple journals of same name
+            util.info("Got ID of " + top_result['display_name']) # POSSBUG: multiple journals of same name
             id = top_result['id']
             return id
         else: 
@@ -57,7 +57,6 @@ class Data():
             (list[list[institution IDs]], list[list[author IDs]]) -
             for each work in journal, lists of affiliated institution and author IDs
         """
-        # POSSBUG self is not empty
         # only get these fields for items retrieved:
         fields = 'display_name,authorships,concepts,publication_year,abstract_inverted_index'
         # filter items retrieved by year:
@@ -78,7 +77,6 @@ class Data():
                                 sampling + '&' + \
                                 field_selection + '&' + \
                                 filtering + '&page={}&mailto=' + self.config.email)
-        
         page = 1
         has_more_pages = True
         fewer_than_10k_results = True
