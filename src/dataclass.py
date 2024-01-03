@@ -6,9 +6,8 @@ from tqdm import tqdm
 
 import util
 from configclass import Config
-from geodata import parse_work_geodata
-from map import map_points
-from multiRequests import multithr_iterate
+from geodata import parse_work_geodata, map_points
+from multiRequests import multithr_iterate, api_get, api_post
 
 def get_journal(journal_name, email):
         """ Returns the OpenAlex Work ID of the top result matching the input journal name
@@ -19,7 +18,7 @@ def get_journal(journal_name, email):
                 str - OpenAlex ID of top match for journal in database
         """    
         url = "https://api.openalex.org/sources?search=" + journal_name + '&mailto=' + email
-        results = util.api_request(url)
+        results = api_request(url)
         if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
         top_result = results['results'][0]
         if 'id' in top_result: 
@@ -76,7 +75,7 @@ class Data():
         while has_more_pages and fewer_than_10k_results:
             # set page value and request page from OpenAlex
             url = works_query_with_page.format(page)
-            page_with_results = util.api_get(url)#.json()
+            page_with_results = api_get(url)
             # loop through page of results
             results = page_with_results['results']
             for work in results:
@@ -94,7 +93,7 @@ class Data():
             fewer_than_10k_results = page_size * page <= 10000
             
             if page % 5 == 0:
-                util.info("iterating through pages: on page " + str(page))
+                util.info("On page " + str(page) + ".")
         
         return institution_id_batches, author_id_batches
     
@@ -162,15 +161,16 @@ class Data():
             sets the Data object's latitudes and longitudes list to the results 
             # TODO: documentation
         """
-        print("ABOUT TO ADD GEODATA")
-        lats, longs = multithr_iterate(list(zip(institution_ids, author_ids)), 
+        util.info("Retrieving geodata...")      
+        results = multithr_iterate(list(zip(institution_ids, author_ids)), 
                                                 parse_work_geodata, 
-                                                batch_size=1, max_workers=2) #OpenAlex rate limiter can't handle workers > 2
-        self.latitudes = lats
-        self.longitudes = longs
+                                                batch_size=1, max_workers=2, tuples=True) #OpenAlex rate limiter can't handle workers > 2
+
+        self.latitudes = [result[0] for result in results]
+        self.longitudes = [result[1] for result in results]
 
     def display_data(self):
-        """ Displays visualizations and/or writes data csv as dictated by commandline args.
+        """ Displays visualizations and writes data CSV as dictated by commandline args.
         """
         dict = {'author' : self.authors, 
                 'title' : self.titles, 
@@ -181,7 +181,7 @@ class Data():
             dict['abstract'] = self.abstracts
         
         if self.analysis.maps:
-            dict['latitude'] = self.latitudes, 
+            dict['latitude'] = self.latitudes
             dict['longitude'] = self.longitudes
 
         df = pd.DataFrame(dict)
@@ -195,5 +195,5 @@ class Data():
             map_dict = {'latitude' : self.latitudes, 'longitude' : self.longitudes} 
             map_df = pd.DataFrame(map_dict)
             df = map_df.groupby(['longitude', 'latitude']).size().reset_index(name='counts')
-            map_points(df, self.config.map)
-            util.info("Map " + self.config.map + " created!")
+            map_points(df, self.config)
+            util.info("Map created at " + self.config.map + ".")
