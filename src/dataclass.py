@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 import util
-from configclass import Config
+from config import Config
 from geodata import parse_work_geodata, map_points
 from multiRequests import multithr_iterate, api_get, api_post
 
