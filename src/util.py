@@ -2,6 +2,8 @@ from operator import invert
 import pickle
 import requests
 import json
+import time
+#import datetime
 
 VERBOSE = False
 def info(text):
@@ -35,42 +37,6 @@ def load_config(file_path):
     with open(file_path, "r") as f:
         config = json.load(f)
     return config
-
-def api_get(url):
-    """ Given a GET url, returns results or handles errors
-        Args: 
-            url: str - API request url
-    """
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        results = response.json()
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-        return None
-    except ValueError as e:
-        print("Error decoding JSON:", e)
-        return None
-    return results
-
-def api_post(url, payload, headers):
-    """ Given a POST request, returns results or handles errors
-        Args: 
-            url: str - API Request url
-            payload: json - payload to send in the body of the Request
-            headers: Dictionary of HTTP Headers to send with the Request
-    """
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()  # Raise an exception for 4xx or 5xx status codes
-        results = response.json()
-    except requests.exceptions.RequestException as e:
-        print("Error occurred:", e)
-        return 
-    except ValueError as e:
-        print("Error decoding JSON:", e)
-        return 
-    return results 
 
 def valid_title(title):
     """ 
