@@ -54,11 +54,11 @@ In terminal and from directory `gesta-diversity`
   `-n JOURNAL_NAME`, `--journal_name JOURNAL_NAME`
                             name of journal or source to search for
 
-Snippet of map of Gesta publications from 2010-2020:
+## Snippet of map of Gesta publications from 2010-2020:
 
 ![alt text](readme_map.png?raw=true)
 
-Graph of gender over time in Gesta publications from 2000-2020:
+## Graph of gender over time in Gesta publications from 2000-2020:
 
 ![alt text](gender-over-time.png?raw=true)
 
@@ -74,6 +74,5 @@ PyGMT:
 
 ## To-Do
 
-- fix error handling for OpenAlex request limiting
 - make GeoData class
 - add Namsor citation
