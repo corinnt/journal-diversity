@@ -64,6 +64,8 @@ Build the conda environment to access the necessary packages:
                             name of journal or source to search for
 
 
+### Note on gender prediction
+This tool uses Namsor, which classifies personal names by into binary male/female categories. This serves as an estimate, as gender is not binary and the software is not 100% accurate. 
 
 ## Sources:
 
