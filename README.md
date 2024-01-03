@@ -15,7 +15,7 @@ Note: Tool can be used to analyze any journal in the OpenAlex database; Gesta, a
 
     python main.py -n usenix -s 500 --verbose -g 
 
-![alt text](README_imgs/gender-over-time.png?raw=true)
+![alt text](README_imgs/gender-over-time.png?raw=true) 
 
 ## Use Instructions
 
