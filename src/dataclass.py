@@ -66,8 +66,19 @@ class Data():
             search_filters += ',publication_year:>' + str(self.analysis.start_year - 1)
         if self.analysis.end_year: 
             search_filters += ',publication_year:<' + str(self.analysis.end_year + 1)
+       
+        sample_size = str(self.analysis.sample_size) 
+        seed = str(42)
 
-        works_query_with_page = 'https://api.openalex.org/works?select=' + fields + '&filter=' + search_filters + '&page={}&mailto=' + self.config.email
+        sampling = 'sample='+ sample_size + '&seed='+ seed
+        field_selection = 'select=' + fields
+        filtering = 'filter=' + search_filters
+
+        works_query_with_page = ('https://api.openalex.org/works?' +
+                                sampling + '&' + \
+                                field_selection + '&' + \
+                                filtering + '&page={}&mailto=' + self.config.email)
+        
         page = 1
         has_more_pages = True
         fewer_than_10k_results = True

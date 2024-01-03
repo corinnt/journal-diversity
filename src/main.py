@@ -12,6 +12,9 @@ def parseArguments():
 
     parser.add_argument("-n", "--journal_name", dest="journal_name", 
         type=str, default=None, help="name of journal or source to search for")
+    
+    parser.add_argument("-s", "--sample", dest="sample_size", 
+        type=int, default=None, help="include sample size (max of 10,000) to analyze subset")
 
     parser.add_argument("-v", "--verbose", action="store_true", help="include to print progress messages")
 
@@ -33,6 +36,7 @@ def parseArguments():
                         help="filter publication dates by this latest year (inclusive)")
 
     args = parser.parse_args()
+
     if args.verbose: 
         util.VERBOSE = True
     return args
@@ -48,7 +52,8 @@ def main(args):
         util.info("Restoring saved data.")
         cached_data = util.unpickle_data(data.config.data_src)
         if cached_data.source_id != data.source_id:
-            raise Exception("Searched source ID does not match saved source ID. Check config file to confirm journal_data_src.")
+            raise Exception("Searched source ID does not match saved source ID. \
+                            Check config file to confirm journal_data_src.")
         cached_data.display_data()
         return 
     util.info("Iterating through journal works...")

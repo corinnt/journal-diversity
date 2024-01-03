@@ -39,6 +39,8 @@ Build the conda environment to access the necessary packages:
   
   `-n`, `--name`            include to specify a journal name for which to search
 
+  `-s`, `--sample`          include sample size (max of 10,000) to analyze subset
+
   `-v`, `--verbose`         include to print progress messages
 
   `-m`, `--write_maps`      include to plot locations of affiliated institutions
@@ -68,8 +70,3 @@ OpenAlex:
 PyGMT:
 
     Wessel, P., Luis, J. F., Uieda, L., Scharroo, R., Wobbe, F., Smith, W. H. F., & Tian, D. (2019). The Generic Mapping Tools version 6. Geochemistry, Geophysics, Geosystems, 20, 5556– 5564. https://doi.org/10.1029/2019GC008515
-
-## To-Do
-
-- make GeoData class
-- add Namsor citation
