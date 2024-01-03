@@ -16,14 +16,14 @@ class GenderData(Data):
         self.genders = []
 
     def predict_genders(self, restore_saved=False):
-        """ Given a data object, populates the gender_strings with predicted genders, 
-            and returns 
+        """ Given a data object, populates self.gender_strings with predicted genders. 
             (via Namsor API)
+
             Args:
                 authors: list[str] of author full names
                 restore_saved: read from existing file rather than Namsor requests
             Returns: 
-                
+                None
         """  
         util.info("Predicting genders...")      
         first_names, inverted_index = full2first_names(self.authors)
@@ -71,7 +71,7 @@ class GenderData(Data):
                 'title' : self.titles, 
                 'year' : self.years,
                 'institution' : self.institution_names, 
-                'predicted gender' : self.genders}
+                'predicted gender' : self.gender_strings}
         if self.analysis.abstracts: 
             dict['abstract'] = self.abstracts
         if self.analysis.maps:
