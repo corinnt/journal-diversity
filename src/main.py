@@ -1,7 +1,7 @@
 import sys
 import argparse
 import util
-from dataclass import Data
+from dataClass import Data
 from genderClass import GenderData
 
 def parseArguments():

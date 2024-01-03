@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 import util
-from dataclass import Data
+from dataClass import Data
 from geodata import map_points
 from multiRequests import multithr_iterate, api_post
 
