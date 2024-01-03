@@ -13,7 +13,6 @@ Note: Script can be used to analyze any journal found in the OpenAlex database; 
 In terminal and from directory `gesta-diversity`
 
 ### 0. For first time set-up:
-
     Set up your `config` file with an email to use as the reply-to for API calls, as well as filepaths to route data to. In order to use the gender analysis features, you will need to make an account with (Namsor)[https://namsor.app/] to get an API key.
 
     Build the conda environment to access the necessary packages:
@@ -29,7 +28,7 @@ In terminal and from directory `gesta-diversity`
 #### use in terminal:
 <!--- Make code --->
     main.py config_path [-h] [-n JOURNAL_NAME] [-v] [-a] [-g] [-m] [-r] [--start_year START_YEAR] [--end_year END_YEAR] 
-#### positional arguments:f
+#### positional arguments: 
   `config_path`             the path to your config file
 
 #### options:
@@ -44,7 +43,7 @@ In terminal and from directory `gesta-diversity`
 
   `-g`, `--predict_genders` include to predict + plot genders of authors with Namsor API
 
-  `r`, `--restore`          
+  `r`, `--restore`          include to display cached data as specified by config file
 
   `--start_year START_YEAR` 
                             filter publications by this earliest year (inclusive)
