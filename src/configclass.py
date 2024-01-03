@@ -12,14 +12,14 @@ class Config():
         self.email = try_json(['email'])
         self.gender_apikey = try_json(['namsor_key'])
 
-        self.gender_src = try_json(['genders'], ['src'])
-        self.gender_dst = try_json(['genders'], ['dst'])
+        self.gender_src = try_json(['genders', 'src'])
+        self.gender_dst = try_json(['genders', 'dst'])
 
-        self.data_src = try_json(['journal_data'], ['src'])
-        self.data_dst = try_json(['journal_data'], ['dst'])
+        self.data_src = try_json(['journal_data', 'src'])
+        self.data_dst = try_json(['journal_data', 'dst'])
 
-        self.csv = try_json(['output'], ['csv'])
-        self.map = try_json(['output'], ['map'])
-        self.gender_plot = try_json(['output'], ['gender-plot'])
+        self.csv = try_json(['output', 'csv'])
+        self.map = try_json(['output', 'map'])
+        self.gender_plot = try_json(['output', 'gender-plot'])
 
 
