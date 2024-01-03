@@ -1,5 +1,4 @@
 *.jpg
-*.png
 *.shp
 *.csv
 */__pycache__/
