@@ -78,15 +78,16 @@ def map_points(df, path):
  
     fig = pgm.Figure()
     fig.basemap(region=region, projection="M8i", frame=True)
-    #fig.coast(land="seagreen", water="white")
     fig.coast(land="lightblue", water="white")
+    #fig.coast(land="sage?", water="white")
     fig.plot(
         x=df.longitude,
         y=df.latitude,
-        size=0.08 + (0.05 * df.counts),
+        size=0.08 + 0.04*(np.log2(df.counts)),
         style="cc",
-        fill="black",
-        #pen="gray40",
-        transparency=50
+        fill='black',
+        #fill="darkblue",
+        #fill="gray40",
+        transparency=60
     )
     fig.savefig(path)
