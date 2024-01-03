@@ -83,10 +83,10 @@ def map_points(df, path):
     fig.plot(
         x=df.longitude,
         y=df.latitude,
-        size=0.08 + (0.04 * df.counts),
+        size=0.08 + (0.05 * df.counts),
         style="cc",
         fill="black",
         #pen="gray40",
-        transparency=42
+        transparency=50
     )
     fig.savefig(path)
