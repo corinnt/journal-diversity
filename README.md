@@ -10,10 +10,9 @@ Note: Script can be used to analyze any journal found in the OpenAlex database; 
 
 ## Use Instructions
 
-In terminal and from directory `gesta-diversity`
 
 ### 0. For first time set-up:
-    Set up your `config` file with an email to use as the reply-to for API calls, as well as filepaths to route data to. In order to use the gender analysis features, you will need to make an account with (Namsor)[https://namsor.app/] to get an API key.
+Set up your `config` file with an email to use as the reply-to for API calls, as well as filepaths to route data to. In order to use the gender analysis features, you will need to make an account with (Namsor)[https://namsor.app/] to get an API key.
 
     Build the conda environment to access the necessary packages:
 <!--- Make code --->
