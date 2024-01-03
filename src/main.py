@@ -48,11 +48,12 @@ def main(args):
 
     if args.restore_saved:
         util.info("Restoring saved data.")
-        cached_data = util.unpickle_data(data.config.journal_data_src)
+        cached_data = util.unpickle_data(data.config.data_src)
         if cached_data.source_id != data.source_id:
             raise Exception("Searched source ID does not match saved source ID. Check config file to confirm journal_data_src.")
         cached_data.display_data()
         return 
+    
     institution_ids, author_ids = data.iterate_search()
     data.populate_additional_data(institution_ids, author_ids)
     data.display_data()
