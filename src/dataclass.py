@@ -18,13 +18,11 @@ def get_journal(journal_name, email):
         """    
         url = "https://api.openalex.org/sources?search=" + journal_name + '&mailto=' + email
         results = api_get(url)
-        if not results: print("No results for journal.") # TODO - test that results would be None if len(results) == 0? 
-        top_result = results['results'][0]
-        if 'id' in top_result: 
-            util.info("Got ID of " + top_result['display_name']) # POSSBUG: multiple journals of same name
-            id = top_result['id']
-            return id
-        else: 
+        if len(results['results']) > 0: 
+            top_result = results['results'][0]
+            util.info("Found " + top_result['display_name'])
+            return top_result
+        else:
             raise Exception("No results found for journal " + journal_name + " in OpenAlex database.")
 
 class Data():
@@ -32,10 +30,10 @@ class Data():
         self.analysis = args
         self.config = Config(config_json)
 
-        if args.journal_name: 
-            self.source_id = get_journal(args.journal_name, self.config.email)
-        else: 
-            self.source_id = 'S21591069' # Default Gesta
+        journal = get_journal(args.journal_name, self.config.email)
+        self.source_id = journal['id']
+        self.num_works = journal['works_count']
+        self.analysis.journal_name = journal['display_name']
 
         self.titles = []
         self.authors = []
@@ -180,6 +178,13 @@ class Data():
         self.latitudes = [result[0] for result in results]
         self.longitudes = [result[1] for result in results]
 
+    def print_stats(self):
+        print("{} Summary\n \
+            Total Works Count: {}\n \
+            Sample Size: {}\n"
+                    .format(self.analysis.journal_name, 
+                            self.num_works,
+                            len(self.works)))
     def display_data(self):
         """ Displays visualizations and writes data CSV as dictated by commandline args.
         """

@@ -10,8 +10,7 @@ def parseArguments():
     #parser.add_argument("email", help="the reply-to email for OpenAlex API calls") # required=True,
     parser.add_argument("config_path", help="path to the config file")
 
-    parser.add_argument("-n", "--journal_name", dest="journal_name", 
-        type=str, default=None, help="name of journal or source to search for")
+    parser.add_argument("journal_name", help="name of journal or source to search for")
     
     parser.add_argument("-s", "--sample", dest="sample_size", 
         type=int, default=None, help="include sample size (max of 10,000) to analyze subset")
@@ -41,6 +40,20 @@ def parseArguments():
         util.VERBOSE = True
     return args
 
+def restore_saved(path):
+    util.info("Restoring saved data.")
+    cached_data = util.unpickle_data(path)
+    util.info(
+    "     Journal: {}\n \
+    Sample size: {}\n \
+    Start year: {}\n \
+    End year: {}\n "
+        .format(cached_data.analysis.journal_name,
+        cached_data.analysis.sample_size,
+        cached_data.analysis.start_year,
+        cached_data.analysis.end_year))
+    return cached_data
+
 def main(args):
     config_json = util.load_config(args.config_path)
     if args.gender: 
@@ -49,20 +62,20 @@ def main(args):
         data = Data(args, config_json)
 
     if args.restore_saved and os.path.exists(data.config.data_src):
-        util.info("Restoring saved data.")
-        cached_data = util.unpickle_data(data.config.data_src)
+        cached_data = restore_saved(data.config.data_src)
         if cached_data.source_id != data.source_id:
-            raise Exception("Searched source ID does not match saved source ID. \
-                            Check config file to confirm journal_data_src.")
-        cached_data.display_data()
-        return 
-    util.info("Iterating through journal works...")
-    institution_ids, author_ids = data.iterate_search()
-    data.populate_additional_data(institution_ids, author_ids)
+            raise Exception("Searched source ID does not match saved ID. \
+                            Check config file to confirm journal data source.")
+        data = cached_data
+    else: 
+        util.info("Iterating through journal works...")
+        institution_ids, author_ids = data.iterate_search()
+        data.populate_additional_data(institution_ids, author_ids)
+        util.pickle_data(data, dst=data.config.data_dst)
+        util.info("Saved pickled data to " + data.config.data_dst + ".") 
     data.display_data()
-    util.pickle_data(data, dst=data.config.data_dst)
-    util.info("Saved pickled data to " + data.config.data_dst + ".") 
-
+    data.print_stats()
+    
 if __name__ == "__main__":
     args = parseArguments()
     main(args)

@@ -62,7 +62,24 @@ class GenderData(Data):
         genders = multithr_iterate(key_and_names, namsor_request, batch_size=10, max_workers=10)
         genders_dict = {name : gender for name, gender in zip(unique_names, genders[0][0])}
         return genders_dict
-
+    
+    def print_stats(self):
+        number_female_authors = 0
+        number_authors = 0
+        for group in self.genders:
+            for gender in group:
+                number_authors += 1
+                if gender == 'female':
+                    number_female_authors += 1
+        print("{} Summary\n \
+            Total Works Count: {}\n \
+            Sample Size: {}\n \
+            Fraction female authors: {}"
+                    .format(self.analysis.journal_name, 
+                            self.num_works,
+                            len(self.titles), 
+                            (number_female_authors/number_authors))) 
+        
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.
         """
