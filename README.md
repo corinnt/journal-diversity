@@ -35,31 +35,32 @@ Build the conda environment to access the necessary packages:
 
 #### use in terminal:
 <!--- Make code --->
-    main.py config_path [-h] [-n JOURNAL_NAME] [-v] [-a] [-g] [-m] [-r] [--start_year START_YEAR] [--end_year END_YEAR] 
+    main.py [-h] [-s SAMPLE_SIZE] [-v] [-a] [-g] [-m] [-r] [--start_year START_YEAR] [--end_year END_YEAR]
+               config_path journal_name
 #### positional arguments: 
-  `config_path`             the path to your config file
+  `config_path`               path to the config file
+  `journal_name`              name of journal or source to search for
 
 #### options:
 
-  `-h`, `--help`            show this help message and exit
-  
-  `-n NAME`, `--journal_name NAME` 
-                            name of journal or source to search for      
+  `-h`, `--help`                show this help message and exit
 
-  `-s NUM`, `--sample NUM`  include sample size (max of 10,000) to analyze subset 
+  `-r`, `--restore_saved`       include to restore saved data
 
-  `-v`, `--verbose`         include to print progress messages
+  `-s SAMPLE_SIZE`, `--sample SAMPLE_SIZE`
+                                include sample size (max of 10,000) to analyze subset
 
-  `-m`, `--write_maps`      include to plot locations of affiliated institutions
+  `-v`, `--verbose`             include to print progress messages
 
-  `-g`, `--predict_genders` include to predict + plot genders of authors with Namsor API
+  `-a`, `--write_abstracts`     include to write abstracts of all works to csv
 
-  `r`, `--restore`          include to display cached data as specified by config file
+  `-g`, `--predict_gender`      include to predict genders of all authors and write to csv
 
-  `--start_year START_YEAR` 
-                            filter publications by this earliest year (inclusive)
+  `-m`, `--write_maps `         include to plot locations of affiliated institutions
 
-  `--end_year END_YEAR`     filter publications by this latest year (inclusive)
+  `--start_year START_YEAR`     filter publication dates by this earliest year (inclusive)
+
+  `--end_year END_YEAR`         filter publication dates by this latest year (inclusive)
 
 ### Note on gender prediction
 This tool uses Namsor, which classifies personal names into binary male/female categories. This serves as an estimate, as gender is not binary and the software is not 100% accurate.
