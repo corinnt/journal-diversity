@@ -95,6 +95,7 @@ class GenderData(Data):
             dict['longitude'] = self.longitudes
 
         df = pd.DataFrame(dict)
+        util.info("Data preview")
         util.info(df.head())
 
         util.info("Writing csv...")
@@ -139,7 +140,7 @@ class GenderData(Data):
 
         plt.xlabel('Year')
         plt.ylabel('Number Authors')
-        plt.title('Number of Male and Female Authors over Time')
+        plt.title("{}: Male and Female Authors over Time".format(self.analysis.journal_name))
         plt.xticks(df['year'])
         plt.legend()
         plt.grid(True)
