@@ -39,6 +39,7 @@ Build the conda environment to access the necessary packages:
                config_path journal_name
 #### positional arguments: 
   `config_path`               path to the config file
+  
   `journal_name`              name of journal or source to search for
 
 #### options:
