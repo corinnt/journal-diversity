@@ -59,10 +59,10 @@ def author_id_geodata(id):
     url =  "https://api.openalex.org/authors/" + id
     author = api_get(url)
     if not author: return lat, long
-
-    if author['last_known_institution']:
-        institution_id = author['last_known_institution']['id']
-        lat, long = institution_id_geodata(institution_id)
+    if author['last_known_institutions']:
+        if len(author['last_known_institutions']) > 0: 
+            institution_id = author['last_known_institutions'][0]['id']
+            lat, long = institution_id_geodata(institution_id)
     return lat, long
 
 def map_points(df, path): 

@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+from scipy import stats as st
 
 import util
 from config import Config
@@ -9,18 +10,18 @@ from geodata import parse_work_geodata, map_points
 from multiRequests import multithr_iterate, api_get, api_post
 
 def get_journal(journal_name, email):
-        """ Returns the OpenAlex Work ID of the top result matching the input journal name
+        """ Returns the OpenAlex Source object of the top result for the input journal name
 
             Args:
                 journal_name: str name of journal for which to search 
             Returns:
-                str - OpenAlex ID of top match for journal in database
+                json - OpenAlex Source object for top match in database
         """    
         url = "https://api.openalex.org/sources?search=" + journal_name + '&mailto=' + email
         results = api_get(url)
         if len(results['results']) > 0: 
             top_result = results['results'][0]
-            util.info("Found " + top_result['display_name'])
+            util.info("\nFound {}.".format(top_result['display_name']))
             return top_result
         else:
             raise Exception("No results found for journal " + journal_name + " in OpenAlex database.")
@@ -179,12 +180,21 @@ class Data():
         self.longitudes = [result[1] for result in results]
 
     def print_stats(self):
-        print("{} Summary\n \
-            Total Works Count: {}\n \
-            Sample Size: {}\n"
-                    .format(self.analysis.journal_name, 
-                            self.num_works,
-                            len(self.works)))
+        institution_dict = {}
+        for group in self.institution_names:
+            for institution in list(set(group.split(';'))): # unique institutions for a work
+                if institution != 'NA':
+                    util.increment(institution, institution_dict)
+        ranked_institutions = list(institution_dict.items())
+        ranked_institutions.sort(key = lambda kv : kv[1], reverse=True) 
+
+        print("\n{} Summary".format(self.analysis.journal_name))
+        print("Total Works Count: {}".format(self.num_works))
+        print("Works sampled: {}".format(len(self.titles)))
+        print("Institutions with most publications:")        
+        for inst in ranked_institutions[:5]:
+            print("     {}, {} publications".format(inst[0].strip(), inst[1]))
+                             
     def display_data(self):
         """ Displays visualizations and writes data CSV as dictated by commandline args.
         """

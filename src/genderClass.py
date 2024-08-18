@@ -71,14 +71,9 @@ class GenderData(Data):
                 number_authors += 1
                 if gender == 'female':
                     number_female_authors += 1
-        print("{} Summary\n \
-            Total Works Count: {}\n \
-            Sample Size: {}\n \
-            Fraction female authors: {}"
-                    .format(self.analysis.journal_name, 
-                            self.num_works,
-                            len(self.titles), 
-                            (number_female_authors/number_authors))) 
+        super().print_stats()
+        print("     Fraction female authors: {}"
+              .format(number_female_authors/number_authors))
         
     def display_data(self):
         """ Displays visualizations and/or writes data csv as dictated by commandline args.

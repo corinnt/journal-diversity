@@ -75,6 +75,7 @@ def main(args):
         util.info("Saved pickled data to " + data.config.data_dst + ".") 
     data.display_data()
     data.print_stats()
+    print()
     
 if __name__ == "__main__":
     args = parseArguments()
